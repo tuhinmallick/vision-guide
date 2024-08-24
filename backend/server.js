@@ -18,7 +18,7 @@ app.use(cors({
 // Routes
 app.use('/api/audio', audioRoutes);
 app.use('/api/yolo', yoloRoutes);
-app.use('/api/speech-to-text', speechRoutes);
+app.use('/api', speechRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
