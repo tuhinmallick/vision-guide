@@ -15,12 +15,8 @@ const ImageForm = () => {
                 body: formData
             });
             const data = await response.json();
-
-            // format and display results
             const objectList = data.objects.map(obj => `${obj.class}: ${(obj.score * 100).toFixed(2)}%`).join(', ');
             setObjects(objectList || 'No objects detected.');
-
-            // fead out the detected objects
             if (window.speechSynthesis) {
                 const utterance = new SpeechSynthesisUtterance(objectList || 'No objects detected.');
                 utterance.lang = 'en-US';

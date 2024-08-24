@@ -1,83 +1,69 @@
 import React, { useState } from 'react';
 
-const AudioForm = () => {
-    const [recording, setRecording] = useState(false);
+function AudioForm() {
+    const [transcription, setTranscription] = useState('');
+    const [isRecording, setIsRecording] = useState(false);
     const [mediaRecorder, setMediaRecorder] = useState(null);
-    const [audioBlob, setAudioBlob] = useState(null);
-    const [transcript, setTranscript] = useState('');
 
-    const handleStartRecording = () => {
+    const startRecording = async () => {
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            navigator.mediaDevices.getUserMedia({ audio: true })
-                .then(stream => {
-                    const recorder = new MediaRecorder(stream);
-                    const audioChunks = [];
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const recorder = new MediaRecorder(stream);
 
-                    recorder.ondataavailable = event => {
-                        audioChunks.push(event.data);
-                    };
+            recorder.ondataavailable = async (event) => {
+                const audioBlob = new Blob([event.data], { type: 'audio/wav' });
+                const formData = new FormData();
+                formData.append('audio', audioBlob);
 
-                    recorder.onstop = () => {
-                        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                        setAudioBlob(audioBlob);
-                        const reader = new FileReader();
-                        reader.onload = () => {
-                            fetch('/api/audio/transcribe', {
-                                method: 'POST',
-                                body: reader.result
-                            })
-                                .then(response => response.json())
-                                .then(data => {
-                                    setTranscript(data.transcript);
-                                    if (window.speechSynthesis) {
-                                        const utterance = new SpeechSynthesisUtterance(data.transcript);
-                                        utterance.lang = 'en-US';
-                                        window.speechSynthesis.speak(utterance);
-                                    }
-                                })
-                                .catch(error => console.error('Error transcribing audio:', error));
-                        };
-                        reader.readAsArrayBuffer(audioBlob);
-                    };
+                try {
+                    const response = await fetch('http://localhost:5000/api/speech-to-text', {
+                        method: 'POST',
+                        body: formData,
+                    });
+                    const data = await response.json();
+                    setTranscription(data.transcription);
+                    console.log(data.transcription);
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            };
 
-                    recorder.start();
-                    setMediaRecorder(recorder);
-                    setRecording(true);
-                })
-                .catch(error => console.error('Error accessing media devices:', error));
-        } else {
-            console.error('Media devices not supported.');
+            recorder.start();
+            setMediaRecorder(recorder);
+            setIsRecording(true);
         }
     };
 
-    const handleStopRecording = () => {
+    const stopRecording = () => {
         if (mediaRecorder) {
             mediaRecorder.stop();
-            setRecording(false);
+            setIsRecording(false);
         }
     };
 
     return (
-        <div className="mt-8">
-            <h2 className="text-xl mb-4">Record Audio</h2>
-            {!recording ? (
-                <button
-                    onClick={handleStartRecording}
-                    className="bg-purple-700 text-white py-2 px-4 rounded"
-                >
-                    Start Recording
-                </button>
-            ) : (
-                <button
-                    onClick={handleStopRecording}
-                    className="bg-red-700 text-white py-2 px-4 rounded"
-                >
-                    Stop Recording
-                </button>
-            )}
-            <p className="mt-4">{transcript}</p>
+        <div className="p-4">
+            <h2 className="text-xl font-semibold mb-4">Audio Transcription</h2>
+            <button
+                onClick={startRecording}
+                disabled={isRecording}
+                className={`transition-transform duration-300 ease-in-out transform ${isRecording ? 'scale-95' : 'scale-100'} bg-blue-500 text-white py-2 px-4 rounded mr-2 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300`}
+            >
+                Start Recording
+            </button>
+            <button
+                onClick={stopRecording}
+                disabled={!isRecording}
+                className={`transition-transform duration-300 ease-in-out transform ${!isRecording ? 'scale-100' : 'scale-95'} bg-red-500 text-white py-2 px-4 rounded ${isRecording ? 'animate-pulse' : ''} focus:outline-none focus:ring-2 focus:ring-red-300`}
+            >
+                Stop Recording
+            </button>
+            <div className="mt-4">
+                <h3 className="text-lg font-semibold">Transcription:</h3>
+                <p className="text-white">{transcription}</p>
+            </div>
         </div>
     );
-};
+}
 
 export default AudioForm;

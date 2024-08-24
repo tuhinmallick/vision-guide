@@ -6,23 +6,20 @@ const FormData = require('form-data');
 
 const upload = multer();
 
-// audio Transcription Route
 router.post('/transcribe', upload.single('audio'), async (req, res) => {
     const audioBuffer = req.file.buffer;
 
     try {
-        // ssend audio data to the transcription service (replace with your service endpoint)
         const form = new FormData();
         form.append('file', audioBuffer, { filename: 'audio.wav', contentType: 'audio/wav' });
 
-        const response = await axios.post('TRANSCRIPTION_API_ENDPOINT', form, {
+        const response = await axios.post('YOUR_TRANSCRIPTION_API_ENDPOINT', form, {
             headers: {
                 ...form.getHeaders(),
-                'Authorization': 'Bearer API_KEY'
+                'Authorization': 'Bearer YOUR_API_KEY'
             }
         });
 
-        // xtract transcription result 
         const transcript = response.data.transcription;
 
         res.json({ transcript });

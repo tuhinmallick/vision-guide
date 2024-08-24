@@ -1,17 +1,24 @@
+
 const express = require('express');
+const cors = require('cors');
+const speechRoutes = require('./routes/speech');
+
 const app = express();
-const audioRoutes = require('./routes/audio');
-const yoloRoutes = require('./routes/yolo');
 
-// middleware
+app.use(cors({
+    origin: 'http://localhost:5173',
+    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+    credentials: true
+}));
+
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use('/api', speechRoutes);
 
-// rroutes
-app.use('/api/audio', audioRoutes);
-app.use('/api/yolo', yoloRoutes);
+app.get('/', (req, res) => {
+    res.send('Server is running');
+});
 
-const PORT = process.env.PORT || 5000;
+const PORT = 5000;
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
