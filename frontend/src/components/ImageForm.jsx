@@ -31,7 +31,7 @@ const ImageForm = () => {
             const objectList = data.map(obj => `${obj[4]}: ${(obj[5] * 100).toFixed(2)}%`).join(', ');
             setObjects(objectList || 'No objects detected.');
 
-            // fead out the detected objects
+            // Read out the detected objects if speech synthesis is available
             if (window.speechSynthesis) {
                 const utterance = new SpeechSynthesisUtterance(objectList || 'No objects detected.');
                 utterance.lang = 'en-US';

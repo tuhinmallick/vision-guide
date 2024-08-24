@@ -1,27 +1,34 @@
-
 const express = require('express');
 const cors = require('cors');
 const speechRoutes = require('./routes/speech');
+const audioRoutes = require('./routes/audio');
+const yoloRoutes = require('./routes/yolo');
 
-const cors = require('cors');
 const app = express();
 
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors({
     origin: 'http://localhost:5173',
     methods: ['GET', 'POST', 'PATCH', 'DELETE'],
     credentials: true
 }));
 
-const audioRoutes = require('./routes/audio');
-const yoloRoutes = require('./routes/yolo');
-
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// rroutes
+// Routes
 app.use('/api/audio', audioRoutes);
 app.use('/api/yolo', yoloRoutes);
+app.use('/api/speech-to-text', speechRoutes);
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
+});
+
+app.get('/', (req, res) => {
+    res.send('Server is running');
+});
 
 const PORT = 5000;
 app.listen(PORT, () => {
