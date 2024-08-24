@@ -5,12 +5,12 @@ const axios = require('axios');
 
 const upload = multer();
 
-// yolo object Detection Route
+// yyolo object Detection Route
 router.post('/detect-objects-yolo', upload.single('image'), async (req, res) => {
     const image = req.file.buffer;
 
     try {
-        const response = await axios.post('http://YOUR_YOLO_API_ENDPOINT/detect', image, {
+        const response = await axios.post('YOLO_API_ENDPOINT/detect', image, {
             headers: {
                 'Content-Type': 'application/octet-stream',
             }
