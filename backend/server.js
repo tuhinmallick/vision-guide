@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const speechRoutes = require('./routes/speech');
 
+const cors = require('cors');
 const app = express();
 
 app.use(cors({
@@ -11,12 +12,16 @@ app.use(cors({
     credentials: true
 }));
 
-app.use(express.json());
-app.use('/api', speechRoutes);
+const audioRoutes = require('./routes/audio');
+const yoloRoutes = require('./routes/yolo');
 
-app.get('/', (req, res) => {
-    res.send('Server is running');
-});
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// rroutes
+app.use('/api/audio', audioRoutes);
+app.use('/api/yolo', yoloRoutes);
 
 const PORT = 5000;
 app.listen(PORT, () => {

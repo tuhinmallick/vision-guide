@@ -7,16 +7,31 @@ const ImageForm = () => {
         event.preventDefault();
         const imageFile = event.target.image.files[0];
         const formData = new FormData();
-        formData.append('image', imageFile);
+        formData.append('image', imageFile); // Match the server-side field name
 
         try {
-            const response = await fetch('/api/yolo/detect-objects-yolo', {
+            const response = await fetch('http://localhost:5000/api/yolo/detect', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                headers: {
+                    'Accept': 'application/json',
+                },
             });
-            const data = await response.json();
-            const objectList = data.objects.map(obj => `${obj.class}: ${(obj.score * 100).toFixed(2)}%`).join(', ');
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json().catch(() => ({})); // Default to empty object if parsing fails
+
+            // Log raw response for debugging
+            console.log(data);
+
+            // Format and display results
+            const objectList = data.map(obj => `${obj[4]}: ${(obj[5] * 100).toFixed(2)}%`).join(', ');
             setObjects(objectList || 'No objects detected.');
+
+            // fead out the detected objects
             if (window.speechSynthesis) {
                 const utterance = new SpeechSynthesisUtterance(objectList || 'No objects detected.');
                 utterance.lang = 'en-US';
@@ -24,6 +39,7 @@ const ImageForm = () => {
             }
         } catch (error) {
             console.error('Error detecting objects with YOLO:', error);
+            setObjects('Error detecting objects.');
         }
     };
 
