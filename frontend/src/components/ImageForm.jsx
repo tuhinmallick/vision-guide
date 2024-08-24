@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 
 const ImageForm = () => {
@@ -10,21 +9,25 @@ const ImageForm = () => {
         const formData = new FormData();
         formData.append('image', imageFile);
 
-        const response = await fetch('/api/image/classify-image', {
-            method: 'POST',
-            body: formData
-        });
-        const data = await response.json();
+        try {
+            const response = await fetch('/api/yolo/detect-objects-yolo', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
 
-        // Process and format the results
-        const objectList = data.objects.map(obj => `${obj.class}: ${(obj.score * 100).toFixed(2)}%`).join(', ');
-        setObjects(objectList || 'No objects detected.');
+            // format and display results
+            const objectList = data.objects.map(obj => `${obj.class}: ${(obj.score * 100).toFixed(2)}%`).join(', ');
+            setObjects(objectList || 'No objects detected.');
 
-        // Read out the detected objects
-        if (window.speechSynthesis) {
-            const utterance = new SpeechSynthesisUtterance(objectList || 'No objects detected.');
-            utterance.lang = 'en-US';
-            window.speechSynthesis.speak(utterance);
+            // fead out the detected objects
+            if (window.speechSynthesis) {
+                const utterance = new SpeechSynthesisUtterance(objectList || 'No objects detected.');
+                utterance.lang = 'en-US';
+                window.speechSynthesis.speak(utterance);
+            }
+        } catch (error) {
+            console.error('Error detecting objects with YOLO:', error);
         }
     };
 
