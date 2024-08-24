@@ -2,30 +2,32 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const axios = require('axios');
+const FormData = require('form-data');
 
 const upload = multer();
 
-// yyolo object Detection Route
+// yyolo Object Detection Route
 router.post('/detect-objects-yolo', upload.single('image'), async (req, res) => {
-    const image = req.file.buffer;
+    const imageBuffer = req.file.buffer;
 
     try {
-        const response = await axios.post('YOLO_API_ENDPOINT/detect', image, {
+        // send image data to the YOLO service (replace with your service endpoint)
+        const form = new FormData();
+        form.append('file', imageBuffer, { filename: 'image.jpg', contentType: 'image/jpeg' });
+
+        const response = await axios.post('YOLO_API_ENDPOINT', form, {
             headers: {
-                'Content-Type': 'application/octet-stream',
+                ...form.getHeaders(),
+                'Authorization': 'Bearer YOLO_API_KEY'
             }
         });
 
-        // adjust based on YOLO API response structure
-        const objects = response.data.objects.map(obj => ({
-            class: obj.class,
-            score: obj.score
-        }));
-
+        // xtract object detection result 
+        const objects = response.data.objects;
         res.json({ objects });
     } catch (error) {
         console.error('Error detecting objects with YOLO:', error);
-        res.status(500).json({ error: 'Error detecting objects with YOLO' });
+        res.status(500).json({ error: 'Error detecting objects' });
     }
 });
 
