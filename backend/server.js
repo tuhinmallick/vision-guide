@@ -1,13 +1,15 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
 const audioRoutes = require('./routes/audio');
 const yoloRoutes = require('./routes/yolo');
 
-// middleware
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors()); // Enable CORS
 
-// rroutes
+// Routes
 app.use('/api/audio', audioRoutes);
 app.use('/api/yolo', yoloRoutes);
 

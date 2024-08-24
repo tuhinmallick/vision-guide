@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const ort = require("onnxruntime-node");
-const multer = require("multer");
-const sharp = require("sharp");
+const multer = require('multer');
+const sharp = require('sharp');
+const ort = require('onnxruntime-node');
 
-// Multer setup for file uploads
-const upload = multer();
+// Set up multer for file uploads
+const upload = multer({ storage: multer.memoryStorage() });
 
 // YOLOv8 class labels
 const yolo_classes = [
@@ -19,24 +19,36 @@ const yolo_classes = [
     'toaster', 'sink', 'refrigerator', 'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush'
 ];
 
-// Route to handle image upload and object detection
-router.post('/detect', upload.single('image_file'), async (req, res) => {
+// Endpoint to detect objects using YOLO
+router.post('/detect', upload.single('image'), async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded.' });
+    }
+
     try {
+        // Log received file details
+        console.log('Received file:', req.file);
+
         const boxes = await detect_objects_on_image(req.file.buffer);
+
+        // Log detected objects
+        console.log('Detected objects:', boxes);
+
         res.json(boxes);
     } catch (error) {
-        res.status(500).json({ error: 'Error detecting objects' });
+        console.error('Error detecting objects with YOLO:', error);
+        res.status(500).json({ error: 'Error processing the image.' });
     }
 });
 
-// Function to detect objects in an image
+// Function to process the image and run object detection
 async function detect_objects_on_image(buf) {
     const [input, img_width, img_height] = await prepare_input(buf);
     const output = await run_model(input);
     return process_output(output, img_width, img_height);
 }
 
-// Convert image to tensor required by YOLOv8
+// Function to convert image to tensor
 async function prepare_input(buf) {
     const img = sharp(buf);
     const md = await img.metadata();
@@ -55,15 +67,15 @@ async function prepare_input(buf) {
     return [input, img_width, img_height];
 }
 
-// Run YOLOv8 model
+// Function to run the model
 async function run_model(input) {
-    const model = await ort.InferenceSession.create("yolov8m.onnx");
+    const model = await ort.InferenceSession.create('yolov8m.onnx');
     input = new ort.Tensor(Float32Array.from(input), [1, 3, 640, 640]);
     const outputs = await model.run({ images: input });
-    return outputs["output0"].data;
+    return outputs['output0'].data;
 }
 
-// Process YOLOv8 output to extract bounding boxes
+// Function to process the raw output from YOLO
 function process_output(output, img_width, img_height) {
     let boxes = [];
     for (let index = 0; index < 8400; index++) {
@@ -94,12 +106,12 @@ function process_output(output, img_width, img_height) {
     return result;
 }
 
-// Intersection over union (IoU) calculation
+// Function to calculate Intersection-over-Union (IoU)
 function iou(box1, box2) {
     return intersection(box1, box2) / union(box1, box2);
 }
 
-// Calculate union area of two boxes
+// Function to calculate the union area of two boxes
 function union(box1, box2) {
     const [box1_x1, box1_y1, box1_x2, box1_y2] = box1;
     const [box2_x1, box2_y1, box2_x2, box2_y2] = box2;
@@ -108,7 +120,7 @@ function union(box1, box2) {
     return box1_area + box2_area - intersection(box1, box2);
 }
 
-// Calculate intersection area of two boxes
+// Function to calculate the intersection area of two boxes
 function intersection(box1, box2) {
     const [box1_x1, box1_y1, box1_x2, box1_y2] = box1;
     const [box2_x1, box2_y1, box2_x2, box2_y2] = box2;
