@@ -4,8 +4,8 @@ const AskButton = ({ yoloResults, transcription }) => {
 
     const handleClick = async () => {
         const prompt = `Consider that you are a guide for a blind person and you have to answer the question based
-        on the attached image detection results. Image Results: ${yoloResults}\n Question: ${transcription}
-        Strictly answer the question based on the image results and this context. In case the question is not relevant, please say: "Sorry I cannot help you with this at the moment, would you mind asking something else"`;
+        on the attached image detection results. Strictly answer the question based on the image results and the question and say nothing else.Give positive response if you see something relevant otherwise tell that you dont see something relevant in the image. In case the question is not relevant, please say: "Sorry I cannot help you with this at the moment, would you mind asking something else
+        Image Results: ${yoloResults}\n Question: ${transcription}"`;
         console.log('Prompt:', prompt);
 
         try {

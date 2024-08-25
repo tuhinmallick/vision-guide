@@ -3,6 +3,7 @@ curl "https://eu-de.ml.cloud.ibm.com/ml/v1/text/generation?version=2023-05-29" \
   -H 'Accept: application/json' \
   -H 'Authorization: Bearer 6DRyTJytXqI-yMA-G_w8EadG5_tRgnUNmtfbgBwbNVCI' \
   -d '{
+
 	"input": "Is Russia a cold country?",
 	"parameters": {
 		"decoding_method": "greedy",
@@ -32,3 +33,7 @@ curl "https://eu-de.ml.cloud.ibm.com/ml/v1/text/generation?version=2023-05-29" \
 		}
 	}
 }'
+
+
+
+Q7hx71VMRz9tosIKi75Sn0jyVJ1ng3_QRrlIKOr5AzPb
