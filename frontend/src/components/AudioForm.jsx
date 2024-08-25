@@ -1,37 +1,45 @@
-// AudioForm.js
 import React, { useState } from 'react';
 
-function AudioForm({ yoloResults }) {
+function AudioForm({ yoloResults, onTranscriptionChange }) {
     const [transcription, setTranscription] = useState('');
     const [isRecording, setIsRecording] = useState(false);
     const [mediaRecorder, setMediaRecorder] = useState(null);
 
     const startRecording = async () => {
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            const recorder = new MediaRecorder(stream);
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const recorder = new MediaRecorder(stream);
 
-            recorder.ondataavailable = async (event) => {
-                const audioBlob = new Blob([event.data], { type: 'audio/wav' });
-                const formData = new FormData();
-                formData.append('audio', audioBlob);
+                recorder.ondataavailable = async (event) => {
+                    const audioBlob = new Blob([event.data], { type: 'audio/wav' });
+                    const formData = new FormData();
+                    formData.append('audio', audioBlob);
 
-                try {
-                    const response = await fetch('http://localhost:5000/api/speech-to-text', {
-                        method: 'POST',
-                        body: formData,
-                    });
-                    const data = await response.json();
-                    setTranscription(data.transcription);
-                    console.log(data.transcription);
-                } catch (error) {
-                    console.error('Error:', error);
-                }
-            };
+                    try {
+                        const response = await fetch('http://localhost:5000/api/speech-to-text', {
+                            method: 'POST',
+                            body: formData,
+                        });
+                        const data = await response.json();
+                        setTranscription(data.transcription);
+                        console.log('Received transcription:', data.transcription); // Debugging
+                        if (onTranscriptionChange) {
+                            onTranscriptionChange(data.transcription); // Notify parent about transcription change
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+                };
 
-            recorder.start();
-            setMediaRecorder(recorder);
-            setIsRecording(true);
+                recorder.start();
+                setMediaRecorder(recorder);
+                setIsRecording(true);
+            } catch (error) {
+                console.error('Error accessing microphone:', error);
+            }
+        } else {
+            console.error('getUserMedia not supported on this browser.');
         }
     };
 
