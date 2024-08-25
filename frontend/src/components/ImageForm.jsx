@@ -1,13 +1,14 @@
+// ImageForm.js
 import React, { useState } from 'react';
 
-const ImageForm = () => {
+export const ImageForm = ({ setYoloResults }) => {
     const [objects, setObjects] = useState('');
 
     const handleSubmit = async (event) => {
         event.preventDefault();
         const imageFile = event.target.image.files[0];
         const formData = new FormData();
-        formData.append('image', imageFile); // Match the server-side field name
+        formData.append('image', imageFile);
 
         try {
             const response = await fetch('http://localhost:5000/api/yolo/detect', {
@@ -22,21 +23,10 @@ const ImageForm = () => {
                 throw new Error('Network response was not ok');
             }
 
-            const data = await response.json().catch(() => ({})); // Default to empty object if parsing fails
-
-            // Log raw response for debugging
-            console.log(data);
-
-            // Format and display results
+            const data = await response.json().catch(() => ({}));
             const objectList = data.map(obj => `${obj[4]}: ${(obj[5] * 100).toFixed(2)}%`).join(', ');
             setObjects(objectList || 'No objects detected.');
-
-            // Read out the detected objects if speech synthesis is available
-            if (window.speechSynthesis) {
-                const utterance = new SpeechSynthesisUtterance(objectList || 'No objects detected.');
-                utterance.lang = 'en-US';
-                window.speechSynthesis.speak(utterance);
-            }
+            setYoloResults(objectList || 'No objects detected.');
         } catch (error) {
             console.error('Error detecting objects with YOLO:', error);
             setObjects('Error detecting objects.');
@@ -54,5 +44,3 @@ const ImageForm = () => {
         </div>
     );
 };
-
-export default ImageForm;

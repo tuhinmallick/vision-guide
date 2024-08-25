@@ -1,16 +1,23 @@
 
 import React from 'react';
+import { useState } from 'react';
+import { ImageForm } from './components/ImageForm';
 import AudioForm from './components/AudioForm';
-import ImageForm from './components/ImageForm';
+import AskButton from './components/AskButton';
 
-function App() {
+const App = () => {
+  const [yoloResults, setYoloResults] = useState('');
+  const [transcription, setTranscription] = useState('');
+
   return (
-    <div className="container mx-auto p-8">
-      <h1 className="text-3xl font-bold text-center mb-8">Vision Guide</h1>
-      <AudioForm />
-      <ImageForm />
-    </div>
+      <div>
+          <ImageForm setYoloResults={setYoloResults} />
+          <AudioForm setTranscription={setTranscription} yoloResults={yoloResults} />
+          <AskButton yoloResults={yoloResults} transcription={transcription} />
+      </div>
   );
-}
+};
 
 export default App;
+
+

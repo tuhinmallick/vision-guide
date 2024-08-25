@@ -4,10 +4,8 @@ const multer = require('multer');
 const sharp = require('sharp');
 const ort = require('onnxruntime-node');
 
-// Set up multer for file uploads
 const upload = multer({ storage: multer.memoryStorage() });
 
-// YOLOv8 class labels
 const yolo_classes = [
     'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat',
     'traffic light', 'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse',

@@ -3,6 +3,7 @@ const cors = require('cors');
 const speechRoutes = require('./routes/speech');
 const audioRoutes = require('./routes/audio');
 const yoloRoutes = require('./routes/yolo');
+const chatRoutes= require('./routes/chat');
 
 const app = express();
 
@@ -19,6 +20,7 @@ app.use(cors({
 app.use('/api/audio', audioRoutes);
 app.use('/api/yolo', yoloRoutes);
 app.use('/api', speechRoutes);
+app.use('/api', chatRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

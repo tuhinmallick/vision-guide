@@ -1,6 +1,7 @@
+// AudioForm.js
 import React, { useState } from 'react';
 
-function AudioForm() {
+function AudioForm({ yoloResults }) {
     const [transcription, setTranscription] = useState('');
     const [isRecording, setIsRecording] = useState(false);
     const [mediaRecorder, setMediaRecorder] = useState(null);
@@ -62,6 +63,7 @@ function AudioForm() {
                 <h3 className="text-lg font-semibold">Transcription:</h3>
                 <p className="text-white">{transcription}</p>
             </div>
+            {/* AskButton will be added in ParentComponent */}
         </div>
     );
 }
