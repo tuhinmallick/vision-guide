@@ -14,7 +14,7 @@ const App = () => {
       <div className='bg-gray-50 rounded-lg shadow-md p-8 text-gray-900'>
         <ImageForm setYoloResults={setYoloResults} />
         <AudioForm setTranscription={setTranscription} yoloResults={yoloResults} />
-        <AskButton yoloResults={yoloResults} transcription={transcription} />
+        {/* <AskButton yoloResults={yoloResults} transcription={transcription} /> */}
       </div>
     </div>
   );

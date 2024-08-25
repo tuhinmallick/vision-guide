@@ -1,6 +1,7 @@
 import React from 'react';
 
 const AskButton = ({ yoloResults, transcription }) => {
+
     const handleClick = async () => {
         const prompt = `Consider that you are a guide for a blind person and you have to answer the question based
         on the attached image detection results. Image Results: ${yoloResults}\n Question: ${transcription}
