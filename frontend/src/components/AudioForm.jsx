@@ -50,30 +50,43 @@ function AudioForm({ yoloResults, onTranscriptionChange }) {
         }
     };
 
+    const convertTextToAudio = (text) => {
+        if (window.speechSynthesis) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            window.speechSynthesis.speak(utterance);
+        } else {
+            console.error('Speech synthesis not supported');
+        }
+    };
+
     return (
-        <div className="p-4">
-            <h2 className="text-xl font-semibold mb-4">Audio Transcription</h2>
-            <button
-                onClick={startRecording}
-                disabled={isRecording}
-                className={`transition-transform duration-300 ease-in-out transform ${isRecording ? 'scale-95' : 'scale-100'} bg-blue-500 text-white py-2 px-4 rounded mr-2 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300`}
-            >
-                Start Recording
-            </button>
-            <button
-                onClick={stopRecording}
-                disabled={!isRecording}
-                className={`transition-transform duration-300 ease-in-out transform ${!isRecording ? 'scale-100' : 'scale-95'} bg-red-500 text-white py-2 px-4 rounded ${isRecording ? 'animate-pulse' : ''} focus:outline-none focus:ring-2 focus:ring-red-300`}
-            >
-                Stop Recording
-            </button>
+        <div className="p-6 max-w-lg mx-auto ">
+            <h2 className="text-2xl font-bold mb-4">Audio Transcription</h2>
+            <div className="flex items-center mb-4">
+                <button
+                    onClick={startRecording}
+                    disabled={isRecording}
+                    className={`bg-blue-500 text-white py-2 px-4 rounded transition-transform duration-300 transform ${isRecording ? 'scale-95' : 'scale-100'}`}
+                >
+                    Start Recording
+                </button>
+                <button
+                    onClick={stopRecording}
+                    disabled={!isRecording}
+                    className={`ml-4 bg-red-500 text-white py-2 px-4 rounded transition-transform duration-300 transform ${!isRecording ? 'scale-95' : 'scale-100'}`}
+                >
+                    Stop Recording
+                </button>
+                {isRecording && <span className="ml-4 text-red-500 font-semibold">Recording...</span>}
+            </div>
             <div className="mt-4">
                 <h3 className="text-lg font-semibold">Transcription:</h3>
-                <p className="text-white">{transcription}</p>
+                <p className="bg-gray-100 text-gray-900 p-4 rounded-lg border border-gray-300">{transcription}</p>
             </div>
             {/* AskButton will be added in ParentComponent */}
         </div>
     );
-}
+};
 
 export default AudioForm;
