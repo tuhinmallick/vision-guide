@@ -22,7 +22,7 @@ function AudioForm({ yoloResults }) {
                     setLoading(true); // Set loading state to true
 
                     try {
-                        const response = await fetch('https://vg-server-production.up.railway.app/speech-to-text', {
+                        const response = await fetch('https://7335-2400-adc5-16a-a200-1060-7de4-8e99-9cf.ngrok-free.app/speech-to-text', {
                             method: 'POST',
                             body: formData,
                         });
@@ -67,7 +67,7 @@ function AudioForm({ yoloResults }) {
         setError(''); // Clear previous errors
 
         try {
-            const response = await fetch('https://vg-server-production.up.railway.app/api/chat', {
+            const response = await fetch('https://7335-2400-adc5-16a-a200-1060-7de4-8e99-9cf.ngrok-free.app/api/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

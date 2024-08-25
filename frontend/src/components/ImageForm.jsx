@@ -46,7 +46,7 @@ export const ImageForm = ({ setYoloResults }) => {
         formData.append('image', imageBlob, 'uploaded-image.jpg');
 
         try {
-            const response = await fetch('https://vg-server-production.up.railway.app/api/yolo/detect', {
+            const response = await fetch('https://7335-2400-adc5-16a-a200-1060-7de4-8e99-9cf.ngrok-free.app/api/yolo/detect', {
                 method: 'POST',
                 body: formData,
                 headers: { 'Accept': 'application/json' },
