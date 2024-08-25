@@ -13,7 +13,7 @@ router.post('/chat', async (req, res) => {
     const headers = {
         "Accept": "application/json",
         "Content-Type": "application/json",
-        "Authorization": `${process.env.IBM_API_KEY}`
+        "Authorization": `Bearer ${process.env.IBM_API_KEY}`
     };
     const body = {
         input: prompt,
@@ -54,7 +54,9 @@ router.post('/chat', async (req, res) => {
         });
 
         if (!response.ok) {
-            throw new Error("Non-200 response");
+            console.error(`Non-200 response: ${response.status} - ${response.statusText}`);
+            // console.error(resultText);
+            throw new Error(`Non-200 response: ${response.status} - ${response.statusText}`);
         }
 
         const result = await response.json();

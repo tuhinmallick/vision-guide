@@ -10,11 +10,13 @@ const App = () => {
   const [transcription, setTranscription] = useState('');
 
   return (
-      <div>
-          <ImageForm setYoloResults={setYoloResults} />
-          <AudioForm setTranscription={setTranscription} yoloResults={yoloResults} />
-          <AskButton yoloResults={yoloResults} transcription={transcription} />
+    <div className="min-h-screen flex flex-col justify-center items-center p-4 bg-gray-500 w-screen">
+      <div className='bg-gray-50 rounded-lg shadow-md p-8 text-gray-900'>
+        <ImageForm setYoloResults={setYoloResults} />
+        <AudioForm setTranscription={setTranscription} yoloResults={yoloResults} />
+        <AskButton yoloResults={yoloResults} transcription={transcription} />
       </div>
+    </div>
   );
 };
 
