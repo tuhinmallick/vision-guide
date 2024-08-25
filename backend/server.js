@@ -11,7 +11,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({
-    origin: ['http://localhost:5173', 'https://7335-2400-adc5-16a-a200-1060-7de4-8e99-9cf.ngrok-free.app/', 'http://localhost:5000/'],
+    origin: ['http://localhost:5173', 'https://7335-2400-adc5-16a-a200-1060-7de4-8e99-9cf.ngrok-free.app/', 'http://localhost:5000/', 'https://ibm-vision-guide.vercel.app/'],
     methods: ['GET', 'POST', 'PATCH', 'DELETE'],
     credentials: true
 }));
