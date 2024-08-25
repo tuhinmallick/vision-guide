@@ -22,7 +22,7 @@ export const ImageForm = ({ setYoloResults }) => {
                 throw new Error('Network response was not ok');
             }
 
-            const data = await response.json().catch(() => ({}));
+        
             const data = await response.json().catch(() => ({}));
             const objectList = data.map(obj => `${obj[4]}: ${(obj[5] * 100).toFixed(2)}%`).join(', ');
             setObjects(objectList || 'No objects detected.');
