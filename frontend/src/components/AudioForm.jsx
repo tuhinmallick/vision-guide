@@ -97,11 +97,11 @@ function AudioForm({ yoloResults }) {
     return (
         <div className="p-6 max-w-lg mx-auto">
             <h2 className="text-2xl font-bold mb-4">Audio Transcription</h2>
-            <div className="flex items-center mb-4">
+            <div className="flex items-center mb-4 ">
                 <button
                     onClick={startRecording}
                     disabled={isRecording || loading}
-                    className={`bg-blue-500 text-white py-2 px-4 rounded transition-transform duration-300 transform ${isRecording ? 'scale-95' : 'scale-100'}`}
+                    className={`bg-blue-500  text-white py-2 px-4 rounded transition-transform duration-300 transform ${isRecording ? 'scale-95' : 'scale-100'}`}
                 >
                     Start Recording
                 </button>

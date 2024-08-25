@@ -24,7 +24,7 @@ router.post('/chat', async (req, res) => {
             stop_sequences: [],
             repetition_penalty: 1
         },
-        model_id: "mistralai/mistral-large",
+        model_id: "ibm/granite-13b-chat-v2",
         project_id: "3e244f2a-5c1f-4cfa-ad52-a509c11b29d8",
         moderations: {
             hap: {

@@ -100,7 +100,7 @@ export const ImageForm = ({ setYoloResults }) => {
 
             {/* Modal for choosing upload options */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-10">
                     <div className="bg-white p-6 rounded-lg shadow-lg">
                         <h3 className="text-xl font-bold mb-4">Choose Image Source</h3>
                         <button
