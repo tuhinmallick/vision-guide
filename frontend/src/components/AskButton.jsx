@@ -5,7 +5,7 @@ const AskButton = ({ yoloResults, transcription }) => {
         const prompt = `Consider that you are a guide for a blind person and you have to answer the question based
         on the attached image detection results. Image Results: ${yoloResults}\n Question: ${transcription}
         Strictly answer the question based on the image results and this context. In case the question is not relevant, please say: "Sorry I cannot help you with this at the moment, would you mind asking something else"`;
-        console.log('Prompt:', prompt); // Debugging
+        console.log('Prompt:', prompt);
 
         try {
             const response = await fetch('http://localhost:5000/api/chat', {
@@ -22,7 +22,7 @@ const AskButton = ({ yoloResults, transcription }) => {
 
             const result = await response.json();
             const generatedText = result.results[0]?.generated_text || "No response received.";
-            
+
             console.log('Generated Text:', generatedText); // Debugging
 
             // Display the result to the user or in a UI component

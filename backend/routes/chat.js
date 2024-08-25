@@ -13,7 +13,7 @@ router.post('/chat', async (req, res) => {
     const headers = {
         "Accept": "application/json",
         "Content-Type": "application/json",
-        "Authorization": `${process.env.IBM_API_KEY}` // Correctly use the API key
+        "Authorization": `${process.env.IBM_API_KEY}`
     };
     const body = {
         input: prompt,
