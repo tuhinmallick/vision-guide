@@ -9,7 +9,6 @@ export const ImageForm = ({ setYoloResults }) => {
         const imageFile = event.target.image.files[0];
         const formData = new FormData();
         formData.append('image', imageFile);
-        formData.append('image', imageFile);
 
         try {
             const response = await fetch('http://localhost:5000/api/yolo/detect', {
