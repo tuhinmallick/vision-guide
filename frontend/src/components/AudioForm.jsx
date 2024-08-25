@@ -57,7 +57,9 @@ function AudioForm({ yoloResults }) {
     };
 
     const handleClick = async () => {
-        const prompt = `Consider that you are a guide for a blind person and you have to answer the question based on the attached image detection results. Strictly answer the question based on the image results and the question and say nothing else. Give positive response if you see something relevant otherwise tell that you don't see something relevant in the image. In case the question is not relevant, please say: "Sorry I cannot help you with this at the moment, would you mind asking something else?" Image Results: ${yoloResults.match(/\b[a-zA-Z]+\b/g)}\n Question: ${transcription}`;
+        const prompt = `Consider that you are a guide for a blind person and you have to answer the question based
+        on the attached image detection results. Strictly answer the question based on the image results and the question and say nothing else.Give positive response if you see something relevant otherwise tell that you dont see something relevant in the image. In case the question is not relevant, please say: "Sorry I cannot help you with this at the moment, would you mind asking something else
+        Image Results: ${yoloResults.match(/\b[a-zA-Z]+\b/g)}\n Question: ${transcription}"`;
         console.log('Prompt:', prompt);
         console.log('Transcription:', transcription);
 

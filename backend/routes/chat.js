@@ -54,16 +54,21 @@ router.post('/chat', async (req, res) => {
         });
 
         if (!response.ok) {
+            const resultText = await response.text();
             console.error(`Non-200 response: ${response.status} - ${response.statusText}`);
-            // console.error(resultText);
+            console.error(`Response body: ${resultText}`);
             throw new Error(`Non-200 response: ${response.status} - ${response.statusText}`);
         }
 
         const result = await response.json();
         res.json(result);
     } catch (error) {
-        console.error("Error generating text:", error);
-        res.status(500).send("Error generating text.");
+        console.error("Error generating text:", error.message);
+        res.status(500).json({
+            error: "Error generating text.",
+            message: error.message,
+            stack: error.stack // Optional: Include stack trace for debugging
+        });
     }
 });
 
