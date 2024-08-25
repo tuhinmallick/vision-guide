@@ -11,7 +11,7 @@ const App = () => {
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center p-4 bg-gray-500 w-screen">
-      <div className='bg-gray-50 rounded-lg shadow-md p-8 text-gray-900'>
+      <div className='bg-gray-50 rounded-lg shadow-md p-8 text-gray-900  py-8'>
         <ImageForm setYoloResults={setYoloResults} />
         <AudioForm setTranscription={setTranscription} yoloResults={yoloResults} />
         {/* <AskButton yoloResults={yoloResults} transcription={transcription} /> */}
