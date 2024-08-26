@@ -11,9 +11,9 @@ const App = () => {
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center  bg-gray-500 w-screen ">
-      <div className='bg-gradient-to-br from-blue-500 via-purple-600 to-purple-300 rounded-lg shadow-md p-8 text-black'>
-        <div className="mb-6 flex justify-center">
-          <img src={logo} alt="App Logo" className="h-16" />
+      <div className='w-full max-w-md p-8 text-white space-y-8 bg-gradient-to-br from-blue-400 via-purple-600 to-purple-300 bg-opacity-40 border-pink-800 rounded-lg shadow-lg'>
+        <div className=" flex justify-center">
+          <img src={logo} alt="App Logo" className="h-[7rem]" />
         </div>
         <ImageForm setYoloResults={setYoloResults} />
         <AudioForm setTranscription={setTranscription} yoloResults={yoloResults} />

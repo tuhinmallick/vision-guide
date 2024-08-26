@@ -87,7 +87,7 @@ export const ImageForm = ({ setYoloResults }) => {
     };
 
     return (
-        <div className="p-6 max-w-lg mx-auto">
+        <div className=" max-w-lg mx-auto">
             <h2 className="text-2xl font-bold mb-4">Upload Image or Use Camera</h2>
 
             {/* Button to open modal for upload options */}
@@ -100,7 +100,7 @@ export const ImageForm = ({ setYoloResults }) => {
 
             {/* Modal for choosing upload options */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-10">
+                <div className="absolute text-black inset-0 bg-black bg-opacity-50 flex justify-center items-center z-10">
                     <div className="bg-white p-6 rounded-lg shadow-lg">
                         <h3 className="text-xl font-bold mb-4">Choose Image Source</h3>
                         <button

@@ -113,14 +113,14 @@ function AudioForm({ yoloResults }) {
                 <button
                     onClick={startRecording}
                     disabled={isRecording || loading}
-                    className={`bg-blue-500 text-white py-2 px-4 rounded transition-transform duration-300 transform ${isRecording ? 'scale-95' : 'scale-100'}`}
+                    className={`bg-blue-500 text-white py-2 px-4 rounded text-sm transition-transform duration-300 transform ${isRecording ? 'scale-95' : 'scale-100'}`}
                 >
                     Start Recording
                 </button>
                 <button
                     onClick={stopRecording}
                     disabled={!isRecording || loading}
-                    className={`ml-4 bg-red-500 text-white py-2 px-4 rounded transition-transform duration-300 transform ${!isRecording ? 'scale-95' : 'scale-100'}`}
+                    className={`ml-4 bg-red-500 text-white py-2 px-4 rounded text-sm transition-transform duration-300 transform ${!isRecording ? 'scale-95' : 'scale-100'}`}
                 >
                     Stop Recording
                 </button>
