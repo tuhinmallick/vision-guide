@@ -88,7 +88,7 @@ export const ImageForm = ({ setYoloResults }) => {
 
     return (
         <div className=" max-w-lg mx-auto">
-            <h2 className="text-2xl font-bold mb-4">Upload Image or Use Camera</h2>
+            <h2 className="text-2xl font-bold mb-4">Select Image</h2>
 
             {/* Button to open modal for upload options */}
             <button
