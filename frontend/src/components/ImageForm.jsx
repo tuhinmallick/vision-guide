@@ -5,6 +5,8 @@ export const ImageForm = ({ setYoloResults }) => {
     const [isCameraOpen, setIsCameraOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [imagePreview, setImagePreview] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [useBackCamera, setUseBackCamera] = useState(false);
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
 
@@ -12,7 +14,12 @@ export const ImageForm = ({ setYoloResults }) => {
     const startCamera = () => {
         setIsCameraOpen(true);
         setIsModalOpen(false);
-        navigator.mediaDevices.getUserMedia({ video: true })
+        const constraints = {
+            video: {
+                facingMode: useBackCamera ? "environment" : "user"
+            }
+        };
+        navigator.mediaDevices.getUserMedia(constraints)
             .then((stream) => {
                 videoRef.current.srcObject = stream;
                 videoRef.current.play();
@@ -42,11 +49,12 @@ export const ImageForm = ({ setYoloResults }) => {
 
     // Handle image upload for captured or selected image
     const handleImageUpload = async (imageBlob) => {
+        setIsLoading(true);
         const formData = new FormData();
         formData.append('image', imageBlob, 'uploaded-image.jpg');
 
         try {
-            const response = await fetch(' https://a8b3-2400-adc5-16a-a200-fdc3-22cf-e142-b6e5.ngrok-free.app/api/yolo/detect', {
+            const response = await fetch('https://a8b3-2400-adc5-16a-a200-fdc3-22cf-e142-b6e5.ngrok-free.app/api/yolo/detect', {
                 method: 'POST',
                 body: formData,
                 headers: { 'Accept': 'application/json' },
@@ -60,9 +68,12 @@ export const ImageForm = ({ setYoloResults }) => {
             const objectList = data.map(obj => `${obj[4]}: ${(obj[5] * 100).toFixed(2)}%`).join(', ');
             setObjects(objectList || 'No objects detected.');
             setYoloResults(objectList || 'No objects detected.');
+            setIsModalOpen(false); // Close modal after successful upload
         } catch (error) {
             console.error('Error detecting objects with YOLO:', error);
             setObjects('Error detecting objects.');
+        } finally {
+            setIsLoading(false); // Hide loading indicator
         }
     };
 
@@ -87,7 +98,7 @@ export const ImageForm = ({ setYoloResults }) => {
     };
 
     return (
-        <div className=" max-w-lg mx-auto">
+        <div className="max-w-lg mx-auto">
             <h2 className="text-2xl font-bold mb-4">Select Image</h2>
 
             {/* Button to open modal for upload options */}
@@ -101,8 +112,14 @@ export const ImageForm = ({ setYoloResults }) => {
             {/* Modal for choosing upload options */}
             {isModalOpen && (
                 <div className="absolute text-black inset-0 bg-black bg-opacity-50 flex justify-center items-center z-10">
-                    <div className="bg-white p-6 rounded-lg shadow-lg">
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-11/12 max-w-sm"> {/* Responsive modal for mobile */}
                         <h3 className="text-xl font-bold mb-4">Choose Image Source</h3>
+                        <button
+                            onClick={() => setUseBackCamera(!useBackCamera)}
+                            className="bg-blue-300 text-white py-1 px-2 rounded-lg mb-2"
+                        >
+                            Switch to {useBackCamera ? "Front" : "Back"} Camera
+                        </button>
                         <button
                             onClick={startCamera}
                             className="bg-blue-500 text-white py-2 px-4 rounded-lg transition-transform duration-300 transform hover:scale-105 mb-2"
@@ -119,8 +136,6 @@ export const ImageForm = ({ setYoloResults }) => {
                             />
                             <button
                                 type="submit"
-                                // onSubmit={handleSubmit}
-                                accept="image/*"
                                 className="bg-purple-700 text-white py-2 px-4 rounded-lg transition-transform duration-300 transform hover:scale-105"
                             >
                                 Submit
@@ -150,6 +165,13 @@ export const ImageForm = ({ setYoloResults }) => {
                 </div>
             )}
 
+            {/* Loading indicator */}
+            {isLoading && (
+                <div className="text-center mt-4">
+                    <p className="text-blue-500 font-semibold">Processing image, please wait...</p>
+                </div>
+            )}
+
             {/* Image preview section */}
             {imagePreview && (
                 <div className="mt-4">
@@ -158,9 +180,17 @@ export const ImageForm = ({ setYoloResults }) => {
                 </div>
             )}
 
+            {/* Detected objects display */}
             <div className="mt-4">
                 <h3 className="text-lg font-semibold">Detected Objects:</h3>
                 <p className="bg-gray-100 text-gray-900 p-4 rounded-lg border border-gray-300">{objects}</p>
+                {/* Button to play detected objects audio */}
+                <button
+                    onClick={() => convertTextToAudio(objects)}
+                    className="mt-2 bg-blue-500 text-white py-2 px-4 rounded-lg transition-transform duration-300 transform hover:scale-105"
+                >
+                    Hear Detected Objects
+                </button>
             </div>
         </div>
     );
