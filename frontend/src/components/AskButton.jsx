@@ -9,7 +9,7 @@ const AskButton = ({ yoloResults, transcription }) => {
         console.log('Prompt:', prompt);
 
         try {
-            const response = await fetch('http://localhost:5000/api/chat', {
+            const response = await fetch(' https://a8b3-2400-adc5-16a-a200-fdc3-22cf-e142-b6e5.ngrok-free.app/api/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
