@@ -22,7 +22,7 @@ function AudioForm({ yoloResults }) {
                     setLoading(true); // Set loading state to true
 
                     try {
-                        const response = await fetch(' https://a8b3-2400-adc5-16a-a200-fdc3-22cf-e142-b6e5.ngrok-free.app/api/speech-to-text', {
+                        const response = await fetch('https://a8b3-2400-adc5-16a-a200-fdc3-22cf-e142-b6e5.ngrok-free.app/api/speech-to-text', {
                             method: 'POST',
                             body: formData,
                         });
@@ -57,9 +57,7 @@ function AudioForm({ yoloResults }) {
     };
 
     const handleClick = async () => {
-        const prompt = `Consider that you are a guide for a blind person and you have to answer the question based
-        on the attached image detection results. Strictly answer the question based on the image results and the question and say nothing else.Give positive response if you see something relevant otherwise tell that you dont see something relevant in the image. In case the question is not relevant, please say: "Sorry I cannot help you with this at the moment, would you mind asking something else
-        Image Results: ${yoloResults.match(/\b[a-zA-Z]+\b/g)}\n Question: ${transcription}"`;
+        const prompt = `Consider that you are a guide for a blind person and you have to answer the question based on the attached image detection results. Strictly answer the question based on the image results and the question and say nothing else.Give positive response if you see something relevant otherwise tell that you dont see something relevant in the image. In case the question is not relevant, please say: "Sorry I cannot help you with this at the moment, would you mind asking something else Image Results: ${yoloResults.match(/\b[a-zA-Z]+\b/g)}\n Question: ${transcription}"`;
         console.log('Prompt:', prompt);
         console.log('Transcription:', transcription);
 
@@ -67,7 +65,7 @@ function AudioForm({ yoloResults }) {
         setError(''); // Clear previous errors
 
         try {
-            const response = await fetch(' https://a8b3-2400-adc5-16a-a200-fdc3-22cf-e142-b6e5.ngrok-free.app/api/chat', {
+            const response = await fetch('https://a8b3-2400-adc5-16a-a200-fdc3-22cf-e142-b6e5.ngrok-free.app/api/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -85,8 +83,6 @@ function AudioForm({ yoloResults }) {
             console.log('Generated Text:', generatedText); // Debugging
 
             setAssistantResponse(generatedText); // Update state with assistant's response
-            speakText(generatedText); // Call the text-to-speech function
-
         } catch (error) {
             setError('Failed to get response from Chat Assistant.');
             console.error('Error sending data to chat assistant:', error);
@@ -111,21 +107,18 @@ function AudioForm({ yoloResults }) {
             <h2 className="text-2xl font-bold mb-4">Audio Transcription</h2>
             <div className="flex items-center mb-4">
                 <button
-                    onClick={startRecording}
-                    disabled={isRecording || loading}
-                    className={`bg-blue-500 text-white py-2 px-4 rounded text-sm transition-transform duration-300 transform ${isRecording ? 'scale-95' : 'scale-100'}`}
+                    onClick={isRecording ? stopRecording : startRecording}
+                    disabled={loading}
+                    className={`bg-blue-500 text-white py-2 px-4 rounded text-sm transition-transform duration-300 transform ${isRecording ? 'bg-red-500' : 'bg-blue-500'}`}
                 >
-                    Start Recording
+                    {isRecording ? 'Recording...' : 'Start Recording'}
                 </button>
-                <button
-                    onClick={stopRecording}
-                    disabled={!isRecording || loading}
-                    className={`ml-4 bg-red-500 text-white py-2 px-4 rounded text-sm transition-transform duration-300 transform ${!isRecording ? 'scale-95' : 'scale-100'}`}
-                >
-                    Stop Recording
-                </button>
-                {isRecording && <span className="ml-4 text-red-500 font-semibold">Recording...</span>}
             </div>
+            {loading && (
+                <div className="text-blue-500 font-semibold mt-4">
+                    Loading...
+                </div>
+            )}
             <div className="mt-4">
                 <h3 className="text-lg font-semibold">Transcription:</h3>
                 <p className="bg-gray-100 text-gray-900 p-4 rounded-lg border border-gray-300">{transcription}</p>
@@ -142,6 +135,14 @@ function AudioForm({ yoloResults }) {
                 <h3 className="text-lg font-semibold">Assistant Response:</h3>
                 <p className="bg-gray-100 text-gray-900 p-4 rounded-lg border border-gray-300">{assistantResponse}</p>
             </div>
+            {assistantResponse && (
+                <button
+                    onClick={() => speakText(assistantResponse)}
+                    className="bg-purple-500 text-white py-2 px-4 rounded hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-300 mt-4"
+                >
+                    Hear Response
+                </button>
+            )}
         </div>
     );
 }
