@@ -168,7 +168,7 @@ export const ImageForm = ({ setYoloResults }) => {
             {/* Loading indicator */}
             {isLoading && (
                 <div className="text-center mt-4">
-                    <p className="text-blue-500 font-semibold">Processing image, please wait...</p>
+                    <p className="text-white font-semibold">Processing image, please wait...</p>
                 </div>
             )}
 

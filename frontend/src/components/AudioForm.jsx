@@ -115,7 +115,7 @@ function AudioForm({ yoloResults }) {
                 </button>
             </div>
             {loading && (
-                <div className="text-blue-500 font-semibold mt-4">
+                <div className="text-white font-semibold mt-4">
                     Loading...
                 </div>
             )}
