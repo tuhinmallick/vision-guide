@@ -138,7 +138,7 @@ function AudioForm({ yoloResults }) {
             {assistantResponse && (
                 <button
                     onClick={() => speakText(assistantResponse)}
-                    className="bg-purple-500 text-white py-2 px-4 rounded hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-300 mt-4"
+                    className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-purple-300 mt-4"
                 >
                     Hear Response
                 </button>
