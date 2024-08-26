@@ -3,15 +3,15 @@ import React, { useState, useRef } from 'react';
 export const ImageForm = ({ setYoloResults }) => {
     const [objects, setObjects] = useState('');
     const [isCameraOpen, setIsCameraOpen] = useState(false);
-    const [isModalOpen, setIsModalOpen] = useState(false); // State to manage modal visibility
-    const [imagePreview, setImagePreview] = useState(null); // State to manage image preview
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [imagePreview, setImagePreview] = useState(null);
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
 
     // Start the camera
     const startCamera = () => {
         setIsCameraOpen(true);
-        setIsModalOpen(false); // Close modal when camera starts
+        setIsModalOpen(false);
         navigator.mediaDevices.getUserMedia({ video: true })
             .then((stream) => {
                 videoRef.current.srcObject = stream;
@@ -29,7 +29,7 @@ export const ImageForm = ({ setYoloResults }) => {
         context.drawImage(videoRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height);
         canvasRef.current.toBlob((blob) => {
             const imageUrl = URL.createObjectURL(blob);
-            setImagePreview(imageUrl); // Set captured image preview
+            setImagePreview(imageUrl);
             handleImageUpload(blob);
         }, 'image/jpeg');
 
@@ -109,6 +109,7 @@ export const ImageForm = ({ setYoloResults }) => {
                         >
                             Capture from Camera
                         </button>
+                        <p className='text-xl font-semibold mt-4'>Upload from device</p>
                         <form onSubmit={handleSubmit} className="flex flex-col">
                             <input
                                 type="file"
@@ -118,9 +119,11 @@ export const ImageForm = ({ setYoloResults }) => {
                             />
                             <button
                                 type="submit"
+                                // onSubmit={handleSubmit}
+                                accept="image/*"
                                 className="bg-purple-700 text-white py-2 px-4 rounded-lg transition-transform duration-300 transform hover:scale-105"
                             >
-                                Upload from Device
+                                Submit
                             </button>
                         </form>
                         <button
