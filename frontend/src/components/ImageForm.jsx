@@ -47,7 +47,7 @@ export const ImageForm = ({ setYoloResults }) => {
         setIsCameraOpen(false);
     };
 
-    // Handle image upload for captured or selected image
+    // Handle image upload for captured or selected image    // Handle image upload for captured or selected image
     const handleImageUpload = async (imageBlob) => {
         setIsLoading(true);
         const formData = new FormData();
@@ -65,7 +65,8 @@ export const ImageForm = ({ setYoloResults }) => {
             }
 
             const data = await response.json().catch(() => ({}));
-            const objectList = data.map(obj => `${obj[4]}: ${(obj[5] * 100).toFixed(2)}%`).join(', ');
+            // Only get object names, no percentages
+            const objectList = data.map(obj => obj[4]).join(', ');
             setObjects(objectList || 'No objects detected.');
             setYoloResults(objectList || 'No objects detected.');
             setIsModalOpen(false); // Close modal after successful upload
@@ -76,6 +77,7 @@ export const ImageForm = ({ setYoloResults }) => {
             setIsLoading(false); // Hide loading indicator
         }
     };
+
 
     // Handle form submission for file input
     const handleSubmit = async (event) => {
