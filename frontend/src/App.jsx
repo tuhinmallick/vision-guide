@@ -4,6 +4,7 @@ import { ImageForm } from './components/ImageForm';
 import AudioForm from './components/AudioForm';
 import AskButton from './components/AskButton';
 import logo from './assets/logo.png';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const App = () => {
   const [yoloResults, setYoloResults] = useState('');
@@ -16,7 +17,9 @@ const App = () => {
           <img src={logo} alt="App Logo" className="h-[7rem]" />
         </div>
         <ImageForm setYoloResults={setYoloResults} />
-        <AudioForm setTranscription={setTranscription} yoloResults={yoloResults} />
+        <ErrorBoundary>
+          <AudioForm setTranscription={setTranscription} yoloResults={yoloResults} />
+        </ErrorBoundary>
         {/* <AskButton yoloResults={yoloResults} transcription={transcription} /> */}
       </div>
     </div>
