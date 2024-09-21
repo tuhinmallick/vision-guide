@@ -12,6 +12,8 @@ export const ImageForm = ({ setYoloResults }) => {
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
     const recognitionRef = useRef(null);
+    const [conversation, setConversation] = useState([]);
+    const fileInputRef = useRef(null);
 
     // Initialize voice recognition and TTS on component mount
     useEffect(() => {
@@ -25,6 +27,9 @@ export const ImageForm = ({ setYoloResults }) => {
             recognitionRef.current.onresult = (event) => {
                 const transcript = event.results[event.resultIndex][0].transcript.trim().toLowerCase();
                 console.log('Voice Command:', transcript);
+
+                // Add the user's query to the conversation log
+                addToConversation('User', transcript);
 
                 if (awaitingCameraChoice) {
                     if (transcript.includes('front')) {
@@ -68,6 +73,10 @@ export const ImageForm = ({ setYoloResults }) => {
         }
     }, [awaitingCameraChoice, awaitingQuestion]);
 
+    const addToConversation = (speaker, message) => {
+        setConversation(prev => [...prev, { speaker, message }]);
+    };
+
     const startVoiceRecognition = () => {
         recognitionRef.current.start();
         console.log('Voice recognition started');
@@ -80,6 +89,7 @@ export const ImageForm = ({ setYoloResults }) => {
         const utterance = new SpeechSynthesisUtterance(message);
         utterance.onend = () => recognitionRef.current.start();
         synth.speak(utterance);
+        addToConversation('Assistant', message);
     };
 
     // Ask user for camera choice (front or back)
@@ -125,11 +135,6 @@ export const ImageForm = ({ setYoloResults }) => {
             });
     };
 
-    // Automatically open file manager
-    const openFileManager = () => {
-        document.querySelector('input[name="image"]').click();
-        talkBack('Opening file manager...');
-    };
 
     // Capture image and submit for detection
     const captureImage = () => {
@@ -180,6 +185,7 @@ export const ImageForm = ({ setYoloResults }) => {
             }
             setObjects(resultText);
             setYoloResults(resultText);
+            addToConversation('Assistant', `Detected objects: ${resultText}`);
         } catch (error) {
             console.error('Error detecting objects with YOLO:', error);
             setObjects('Error detecting objects.');
@@ -222,14 +228,22 @@ export const ImageForm = ({ setYoloResults }) => {
         }
     };
 
-    const handleFileSelection = (event) => {
-        const file = event.target.files[0];  // Get the selected file
-        if (file) {
-            setImagePreview(URL.createObjectURL(file));  // Show the preview of the selected image
-            talkBack('Image selected from device. Processing for detection.');
-            handleImageUpload(file);  // Send the selected file for detection
+    const openFileManager = () => {
+        if (fileInputRef.current) {
+            fileInputRef.current.click();  // Use ref to trigger the file input click
+            talkBack('Opening file manager...');
         }
     };
+
+    const handleFileSelection = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            setImagePreview(URL.createObjectURL(file));
+            talkBack('Image selected from device. Processing for detection.');
+            handleImageUpload(file);
+        }
+    };
+
 
 
     return (
@@ -254,7 +268,8 @@ export const ImageForm = ({ setYoloResults }) => {
                     name="image"
                     accept="image/*"
                     className="hidden"
-                    onChange={(e) => handleFileSelection(e)}  // Listen for file selection
+                    ref={fileInputRef}  // Attach ref here
+                    onChange={handleFileSelection}  // Listen for file selection
                 />
             </form>
 
@@ -271,12 +286,12 @@ export const ImageForm = ({ setYoloResults }) => {
                     <img src={imagePreview} alt="Preview" className="w-full max-w-lg h-auto border rounded-lg mb-4" />
                 </div>
             )}
-            {(imagePreview &&
+            {/* {(imagePreview &&
                 <div className="mt-4">
                     <h3 className="text-lg font-semibold">Detected Objects:</h3>
                     <p className="text-white">{objects}</p>
                 </div>
-            )}
+            )} */}
 
 
             {assistantResponse && (
@@ -285,6 +300,17 @@ export const ImageForm = ({ setYoloResults }) => {
                     <p className="text-white">{assistantResponse}</p>
                 </div>
             )}
+
+            {/* Chat Display */}
+            <div className="mt-4 bg-gray-100 p-4 rounded-lg max-h-96 overflow-y-auto">
+                <h3 className="text-lg font-semibold mb-2 text-gray-950">Conversation:</h3>
+                {conversation.map((entry, index) => (
+                    <div key={index} className="mb-2 text-gray-700">
+                        <strong>{entry.speaker}: </strong>
+                        <span>{entry.message}</span>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 };

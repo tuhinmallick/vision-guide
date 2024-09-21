@@ -16,7 +16,9 @@ const App = () => {
         <div className=" flex justify-center">
           <img src={logo} alt="App Logo" className="h-[7rem]" />
         </div>
-        <ImageForm setYoloResults={setYoloResults} />
+        <ErrorBoundary>
+          <ImageForm setYoloResults={setYoloResults} />
+        </ErrorBoundary>
         {/* <ErrorBoundary>
           <AudioForm setTranscription={setTranscription} yoloResults={yoloResults} />
         </ErrorBoundary> */}
