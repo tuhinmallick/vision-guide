@@ -128,6 +128,7 @@ export const ImageForm = ({ setYoloResults }) => {
     // Automatically open file manager
     const openFileManager = () => {
         document.querySelector('input[name="image"]').click();
+        talkBack('Opening file manager...');
     };
 
     // Capture image and submit for detection
