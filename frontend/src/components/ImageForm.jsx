@@ -5,7 +5,7 @@ export const ImageForm = ({ setYoloResults }) => {
     const [isCameraOpen, setIsCameraOpen] = useState(false);
     const [imagePreview, setImagePreview] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [useBackCamera, setUseBackCamera] = useState(false); // This controls which camera to use
+    const [useBackCamera, setUseBackCamera] = useState(true); // This controls which camera to use
     const [awaitingCameraChoice, setAwaitingCameraChoice] = useState(false);
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
