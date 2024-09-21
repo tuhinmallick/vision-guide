@@ -150,10 +150,10 @@ export const ImageForm = ({ setYoloResults }) => {
         setIsCameraOpen(false);
     };
 
-    const handleImageUpload = async (imageBlob) => {
+    const handleImageUpload = async (image) => {
         setIsLoading(true);
         const formData = new FormData();
-        formData.append('image', imageBlob, 'uploaded-image.jpg');
+        formData.append('image', image, image.name || 'uploaded-image.jpg');
 
         try {
             const response = await fetch('http://localhost:5000/api/yolo/detect', {
@@ -221,6 +221,16 @@ export const ImageForm = ({ setYoloResults }) => {
         }
     };
 
+    const handleFileSelection = (event) => {
+        const file = event.target.files[0];  // Get the selected file
+        if (file) {
+            setImagePreview(URL.createObjectURL(file));  // Show the preview of the selected image
+            talkBack('Image selected from device. Processing for detection.');
+            handleImageUpload(file);  // Send the selected file for detection
+        }
+    };
+
+
     return (
         <div className="max-w-lg mx-auto">
             <button
@@ -238,8 +248,15 @@ export const ImageForm = ({ setYoloResults }) => {
             )}
 
             <form className="flex flex-col">
-                <input type="file" name="image" accept="image/*" className="hidden" />
+                <input
+                    type="file"
+                    name="image"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleFileSelection(e)}  // Listen for file selection
+                />
             </form>
+
 
             {isLoading && (
                 <div className="text-center mt-4">
