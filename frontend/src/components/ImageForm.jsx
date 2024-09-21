@@ -5,8 +5,10 @@ export const ImageForm = ({ setYoloResults }) => {
     const [isCameraOpen, setIsCameraOpen] = useState(false);
     const [imagePreview, setImagePreview] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [useBackCamera, setUseBackCamera] = useState(true); // This controls which camera to use
+    const [assistantResponse, setAssistantResponse] = useState(''); // Assistant's response state
+    const [useBackCamera, setUseBackCamera] = useState(true); // Control which camera to use
     const [awaitingCameraChoice, setAwaitingCameraChoice] = useState(false);
+    const [awaitingQuestion, setAwaitingQuestion] = useState(false); // Waiting for user to ask questions
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
     const recognitionRef = useRef(null);
@@ -39,8 +41,12 @@ export const ImageForm = ({ setYoloResults }) => {
                     setAwaitingCameraChoice(false);
                 }
 
-                // General voice commands
+                if (awaitingQuestion) {
+                    handleClick(transcript); // Send question to assistant
+                    setAwaitingQuestion(false);
+                }
 
+                // General voice commands
                 if (transcript.includes('upload from device') || transcript.includes('device') || transcript.includes('file manager')) {
                     openFileManager();
                 } else if (transcript.includes('capture from camera') || transcript.includes('capture from the camera') || transcript.includes('open the camera') || transcript.includes('open camera') || transcript.includes('i want to capture from camera') || transcript.includes('i want to capture from the camera') || transcript.includes('capture from front camera') || transcript.includes('capture from back camera') || transcript.includes('capture image from the camera') || transcript.includes('capture from picture the camera') || transcript.includes('capture pic from the camera')) {
@@ -57,7 +63,7 @@ export const ImageForm = ({ setYoloResults }) => {
                 // }
             };
         }
-    }, [awaitingCameraChoice]);
+    }, [awaitingCameraChoice, awaitingQuestion]);
 
     const startVoiceRecognition = () => {
         recognitionRef.current.start();
@@ -142,10 +148,12 @@ export const ImageForm = ({ setYoloResults }) => {
             const objectList = data.map(obj => obj[4]).join(', ');
             const resultText = objectList || 'No objects detected.';
             if (resultText === 'No objects detected.') {
-                setObjects('No objects detected.');
+                setObjects(resultText);
                 talkBack('No objects detected.');
             } else {
                 talkBack(`Detected objects are: ${resultText}`);
+                talkBack('Do you have any questions about these objects?');
+                setAwaitingQuestion(true); // Now we wait for the user's question
             }
             setObjects(resultText);
             setYoloResults(resultText);
@@ -153,6 +161,38 @@ export const ImageForm = ({ setYoloResults }) => {
             console.error('Error detecting objects with YOLO:', error);
             setObjects('Error detecting objects.');
             talkBack('Error detecting objects.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleClick = async (transcription) => {
+        const prompt = `Consider that you are a guide for a blind person and you have to answer the question based on the attached image detection results. Strictly answer the question based on the image results and the question and say nothing else. Image Results: ${objects.match(/\b[a-zA-Z]+\b/g)}\n Question: ${transcription}`;
+
+        setIsLoading(true); // Set loading state to true
+        setAssistantResponse(''); // Clear previous response
+
+        try {
+            const response = await fetch('https://a8b3-2400-adc5-16a-a200-fdc3-22cf-e142-b6e5.ngrok-free.app/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const result = await response.json();
+            const generatedText = result.results[0]?.generated_text || 'No response received.';
+
+            setAssistantResponse(generatedText);
+            talkBack(generatedText); // Speak the assistant's response
+        } catch (error) {
+            console.error('Error sending data to chat assistant:', error);
+            talkBack('Failed to get a response from the assistant.');
         } finally {
             setIsLoading(false);
         }
@@ -193,9 +233,15 @@ export const ImageForm = ({ setYoloResults }) => {
 
             <div className="mt-4">
                 <h3 className="text-lg font-semibold">Detected Objects:</h3>
-                <p className="bg-gray-100 text-gray-900 p-4 rounded-lg border border-gray-300">{objects}</p>
+                <p className="text-white">{objects}</p>
             </div>
+
+            {assistantResponse && (
+                <div className="mt-4">
+                    <h3 className="text-lg font-semibold">Assistant Response:</h3>
+                    <p className="text-white">{assistantResponse}</p>
+                </div>
+            )}
         </div>
     );
 };
-

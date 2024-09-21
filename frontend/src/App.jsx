@@ -17,9 +17,9 @@ const App = () => {
           <img src={logo} alt="App Logo" className="h-[7rem]" />
         </div>
         <ImageForm setYoloResults={setYoloResults} />
-        <ErrorBoundary>
+        {/* <ErrorBoundary>
           <AudioForm setTranscription={setTranscription} yoloResults={yoloResults} />
-        </ErrorBoundary>
+        </ErrorBoundary> */}
         {/* <AskButton yoloResults={yoloResults} transcription={transcription} /> */}
       </div>
     </div>
