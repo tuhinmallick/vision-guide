@@ -6,7 +6,7 @@ export const ImageForm = ({ setYoloResults }) => {
     const [imagePreview, setImagePreview] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [assistantResponse, setAssistantResponse] = useState(''); // Assistant's response state
-    // const [useBackCamera, setUseBackCamera] = useState(true); // Control which camera to use
+    const [useBackCamera, setUseBackCamera] = useState(true); // Control which camera to use
     const [awaitingCameraChoice, setAwaitingCameraChoice] = useState(false);
     const [awaitingQuestion, setAwaitingQuestion] = useState(false); // Waiting for user to ask questions
     const videoRef = useRef(null);
@@ -30,20 +30,20 @@ export const ImageForm = ({ setYoloResults }) => {
                 // Add the user's query to the conversation log
                 addToConversation('User', transcript);
 
-                if (awaitingCameraChoice) {
-                    if (transcript.includes('front')) {
-                        // setUseBackCamera(false);
-                        talkBack('Opening front camera');
-                        startFrontCamera();
-                    } else if (transcript.includes('back')) {
-                        // setUseBackCamera(true);
-                        talkBack('Opening back camera');
-                        startBackCamera();
-                    } else {
-                        talkBack('Sorry, I didn’t get that. Please try again!');
-                    }
-                    setAwaitingCameraChoice(false);
-                }
+                // if (awaitingCameraChoice) {
+                //     if (transcript.includes('front')) {
+                //         // setUseBackCamera(false);
+                //         talkBack('Opening front camera');
+                //         startFrontCamera();
+                //     } else if (transcript.includes('back')) {
+                //         // setUseBackCamera(true);
+                //         talkBack('Opening back camera');
+                //         startBackCamera();
+                //     } else {
+                //         talkBack('Sorry, I didn’t get that. Please try again!');
+                //     }
+                //     setAwaitingCameraChoice(false);
+                // }
 
                 if (awaitingQuestion) {
                     handleClick(transcript); // Send question to assistant
@@ -54,7 +54,8 @@ export const ImageForm = ({ setYoloResults }) => {
                 if (transcript.includes('upload from device') || transcript.includes('device') || transcript.includes('file manager')) {
                     openFileManager();
                 } else if (transcript.includes('capture from camera') || transcript.includes('capture from the camera') || transcript.includes('open the camera') || transcript.includes('open camera') || transcript.includes('i want to capture from camera') || transcript.includes('i want to capture from the camera') || transcript.includes('capture from front camera') || transcript.includes('capture from back camera') || transcript.includes('capture image from the camera') || transcript.includes('capture from picture the camera') || transcript.includes('capture pic from the camera')) {
-                    askCameraChoice();
+                    talkBack("Opening camera")
+                    startBackCamera();
                 } else if (transcript.includes('capture image') || transcript.includes('take image') || transcript.includes('capture pic') || transcript.includes('capture picture') || transcript.includes('take picture') || transcript.includes('capture the pic') || transcript.includes('capture the picture') || transcript.includes('capture') || transcript.includes('capture the image') || transcript.includes('take the image') || transcript.includes('take the pic') || transcript.includes('take the picture')) {
                     captureImage();
                 } else if (transcript.includes('stop camera') || transcript.includes('stop the camera') || transcript.includes('stop') || transcript.includes('turn off  camera')) {
@@ -98,23 +99,23 @@ export const ImageForm = ({ setYoloResults }) => {
     };
 
     // Start the camera based on the user's choice (front/back)
-    const startFrontCamera = () => {
-        setIsCameraOpen(true);
-        const constraints = {
-            video: {
-                facingMode: 'user'
-            }
-        };
-        navigator.mediaDevices.getUserMedia(constraints)
-            .then((stream) => {
-                videoRef.current.srcObject = stream;
-                videoRef.current.play();
-            })
-            .catch((error) => {
-                console.error('Error accessing the camera:', error);
-                setIsCameraOpen(false);
-            });
-    };
+    // const startFrontCamera = () => {
+    //     setIsCameraOpen(true);
+    //     const constraints = {
+    //         video: {
+    //             facingMode: 'user'
+    //         }
+    //     };
+    //     navigator.mediaDevices.getUserMedia(constraints)
+    //         .then((stream) => {
+    //             videoRef.current.srcObject = stream;
+    //             videoRef.current.play();
+    //         })
+    //         .catch((error) => {
+    //             console.error('Error accessing the camera:', error);
+    //             setIsCameraOpen(false);
+    //         });
+    // };
 
     const startBackCamera = () => {
         setIsCameraOpen(true);
