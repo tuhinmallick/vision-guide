@@ -13,7 +13,6 @@ export const ImageForm = ({ setYoloResults }) => {
     const canvasRef = useRef(null);
     const recognitionRef = useRef(null);
     const [conversation, setConversation] = useState([]);
-    const fileInputRef = useRef(null);
 
     // Initialize voice recognition and TTS on component mount
     useEffect(() => {
@@ -135,6 +134,11 @@ export const ImageForm = ({ setYoloResults }) => {
             });
     };
 
+    // Automatically open file manager
+    const openFileManager = () => {
+        document.querySelector('input[name="image"]').click();
+        talkBack('Opening file manager');
+    };
 
     // Capture image and submit for detection
     const captureImage = () => {
@@ -228,22 +232,14 @@ export const ImageForm = ({ setYoloResults }) => {
         }
     };
 
-    const openFileManager = () => {
-        if (fileInputRef.current) {
-            fileInputRef.current.click();  // Use ref to trigger the file input click
-            talkBack('Opening file manager...');
-        }
-    };
-
     const handleFileSelection = (event) => {
-        const file = event.target.files[0];
+        const file = event.target.files[0];  // Get the selected file
         if (file) {
-            setImagePreview(URL.createObjectURL(file));
+            setImagePreview(URL.createObjectURL(file));  // Show the preview of the selected image
             talkBack('Image selected from device. Processing for detection.');
-            handleImageUpload(file);
+            handleImageUpload(file);  // Send the selected file for detection
         }
     };
-
 
 
     return (
@@ -268,8 +264,7 @@ export const ImageForm = ({ setYoloResults }) => {
                     name="image"
                     accept="image/*"
                     className="hidden"
-                    ref={fileInputRef}  // Attach ref here
-                    onChange={handleFileSelection}  // Listen for file selection
+                    onChange={(e) => handleFileSelection(e)}  // Listen for file selection
                 />
             </form>
 
@@ -286,12 +281,12 @@ export const ImageForm = ({ setYoloResults }) => {
                     <img src={imagePreview} alt="Preview" className="w-full max-w-lg h-auto border rounded-lg mb-4" />
                 </div>
             )}
-            {/* {(imagePreview &&
+            {(imagePreview &&
                 <div className="mt-4">
                     <h3 className="text-lg font-semibold">Detected Objects:</h3>
                     <p className="text-white">{objects}</p>
                 </div>
-            )} */}
+            )}
 
 
             {assistantResponse && (
