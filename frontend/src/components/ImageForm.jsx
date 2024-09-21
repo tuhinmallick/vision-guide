@@ -13,6 +13,7 @@ export const ImageForm = ({ setYoloResults }) => {
     const canvasRef = useRef(null);
     const recognitionRef = useRef(null);
     const [conversation, setConversation] = useState([]);
+    const [countdown, setCountdown] = useState(0);
 
     // Initialize voice recognition and TTS on component mount
     useEffect(() => {
@@ -56,9 +57,13 @@ export const ImageForm = ({ setYoloResults }) => {
                 } else if (transcript.includes('capture from camera') || transcript.includes('capture from the camera') || transcript.includes('open the camera') || transcript.includes('open camera') || transcript.includes('i want to capture from camera') || transcript.includes('i want to capture from the camera') || transcript.includes('capture from front camera') || transcript.includes('capture from back camera') || transcript.includes('capture image from the camera') || transcript.includes('capture from picture the camera') || transcript.includes('capture pic from the camera')) {
                     talkBack("Opening camera")
                     startBackCamera();
-                } else if (transcript.includes('capture image') || transcript.includes('take image') || transcript.includes('capture pic') || transcript.includes('capture picture') || transcript.includes('take picture') || transcript.includes('capture the pic') || transcript.includes('capture the picture') || transcript.includes('capture') || transcript.includes('capture the image') || transcript.includes('take the image') || transcript.includes('take the pic') || transcript.includes('take the picture')) {
+                    startCountdown();
                     captureImage();
-                } else if (transcript.includes('stop camera') || transcript.includes('stop the camera') || transcript.includes('stop') || transcript.includes('turn off  camera')) {
+                }
+                //  else if (transcript.includes('capture image') || transcript.includes('take image') || transcript.includes('capture pic') || transcript.includes('capture picture') || transcript.includes('take picture') || transcript.includes('capture the pic') || transcript.includes('capture the picture') || transcript.includes('capture') || transcript.includes('capture the image') || transcript.includes('take the image') || transcript.includes('take the pic') || transcript.includes('take the picture')) {
+                //     captureImage();
+                // } 
+                else if (transcript.includes('stop camera') || transcript.includes('stop the camera') || transcript.includes('stop') || transcript.includes('turn off  camera')) {
                     stopCamera();
                     talkBack("Camera is turned off");
                 }
@@ -72,6 +77,24 @@ export const ImageForm = ({ setYoloResults }) => {
             };
         }
     }, [awaitingCameraChoice, awaitingQuestion]);
+
+    const startCountdown = () => {
+        setCountdown(5);
+        let count = 5;
+
+        talkBack(`Taking picture in ${count} seconds...`);
+        talkBack(" 5, 4, 3, 2, 1")
+        const countdownInterval = setInterval(() => {
+            if (count > 0) {
+
+                setCountdown(count);
+                count--;
+            } else {
+                clearInterval(countdownInterval);
+                captureImage(); // Capture image after countdown
+            }
+        }, 1000);
+    };
 
     const addToConversation = (speaker, message) => {
         setConversation(prev => [...prev, { speaker, message }]);
