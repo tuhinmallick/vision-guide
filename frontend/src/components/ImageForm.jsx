@@ -5,7 +5,7 @@ export const ImageForm = ({ setYoloResults }) => {
     const [isCameraOpen, setIsCameraOpen] = useState(false);
     const [imagePreview, setImagePreview] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [useBackCamera, setUseBackCamera] = useState(false);
+    const [useBackCamera, setUseBackCamera] = useState(false); // This controls which camera to use
     const [awaitingCameraChoice, setAwaitingCameraChoice] = useState(false);
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
@@ -25,22 +25,23 @@ export const ImageForm = ({ setYoloResults }) => {
                 console.log('Voice Command:', transcript);
 
                 if (awaitingCameraChoice) {
-                    // If awaiting for front/back camera selection
-                    if (transcript.includes('front') || transcript.includes('the front') || transcript.includes('front camera') || transcript.includes('from front') || transcript.includes('from front camera') || transcript.includes('from the front camera') || transcript.includes('take from the front camera') || transcript.includes('take from front camera') || transcript.includes('i want to take image from front camera') || transcript.includes('i want to take pic from front camera') || transcript.includes('i want to use front camera')) {
+                    if (transcript.includes('front')) {
                         setUseBackCamera(false);
+                        talkBack('Opening front camera');
                         startCamera();
-                        setAwaitingCameraChoice(false);
-                    } else if (transcript.includes('back') || transcript.includes('back camera') || transcript.includes('from back camera') || transcript.includes('take image from back camera') || transcript.includes('from the back camera') || transcript.includes('take from the back camera') || transcript.includes('take from back camera') || transcript.includes('i want to take image from back camera') || transcript.includes('i want to take pic from back camera') || transcript.includes('i want to use back camera')) {
+                    } else if (transcript.includes('back')) {
                         setUseBackCamera(true);
+                        talkBack('Opening back camera');
                         startCamera();
-                        setAwaitingCameraChoice(false);
                     } else {
-                        // talkBack('Sorry, I didn’t get that. Please try again!');
+                        talkBack('Sorry, I didn’t get that. Please try again!');
                     }
                     setAwaitingCameraChoice(false);
                 }
+
                 // General voice commands
-                if (transcript.includes('upload from device') || transcript.includes('upload image from device') || transcript.includes('open file manager') || transcript.includes('open the file manager') || transcript.includes('upload pic from device') || transcript.includes('upload picture from device') || transcript.includes('i want to upload image from device') || transcript.includes('i want to upload from device')) {
+
+                if (transcript.includes('upload from device') || transcript.includes('device') || transcript.includes('file manager')) {
                     openFileManager();
                 } else if (transcript.includes('capture from camera') || transcript.includes('capture from the camera') || transcript.includes('open the camera') || transcript.includes('open camera') || transcript.includes('i want to capture from camera') || transcript.includes('i want to capture from the camera') || transcript.includes('capture from front camera') || transcript.includes('capture from back camera') || transcript.includes('capture image from the camera') || transcript.includes('capture from picture the camera') || transcript.includes('capture pic from the camera')) {
                     askCameraChoice();
@@ -48,6 +49,7 @@ export const ImageForm = ({ setYoloResults }) => {
                     captureImage();
                 } else if (transcript.includes('stop camera') || transcript.includes('stop the camera') || transcript.includes('stop') || transcript.includes('turn off  camera')) {
                     stopCamera();
+                    talkBack("Camera is turned off");
                 }
                 //  else {
                 //     // Incorrect command
@@ -57,20 +59,18 @@ export const ImageForm = ({ setYoloResults }) => {
         }
     }, [awaitingCameraChoice]);
 
-    // Start listening for voice commands
     const startVoiceRecognition = () => {
         recognitionRef.current.start();
         console.log('Voice recognition started');
     };
 
-    // Speak a message to the user
+    // Provide voice feedback to the user
     const talkBack = (message) => {
         const synth = window.speechSynthesis;
         const utterance = new SpeechSynthesisUtterance(message);
-        utterance.onend = () => recognitionRef.current.start(); // Restart listening after feedback
+        utterance.onend = () => recognitionRef.current.start();
         synth.speak(utterance);
     };
-
 
     // Ask user for camera choice (front or back)
     const askCameraChoice = () => {
@@ -78,12 +78,12 @@ export const ImageForm = ({ setYoloResults }) => {
         setAwaitingCameraChoice(true);
     };
 
-    // Start the camera
+    // Start the camera based on the user's choice (front/back)
     const startCamera = () => {
         setIsCameraOpen(true);
         const constraints = {
             video: {
-                facingMode: useBackCamera ? "environment" : "user"
+                facingMode: useBackCamera ? 'environment' : 'user'
             }
         };
         navigator.mediaDevices.getUserMedia(constraints)
@@ -109,6 +109,7 @@ export const ImageForm = ({ setYoloResults }) => {
         canvasRef.current.toBlob((blob) => {
             const imageUrl = URL.createObjectURL(blob);
             setImagePreview(imageUrl);
+            talkBack('Image captured. Processing for detection.');
             handleImageUpload(blob);
         }, 'image/jpeg');
         stopCamera();
@@ -127,7 +128,7 @@ export const ImageForm = ({ setYoloResults }) => {
         formData.append('image', imageBlob, 'uploaded-image.jpg');
 
         try {
-            const response = await fetch('https://a8b3-2400-adc5-16a-a200-fdc3-22cf-e142-b6e5.ngrok-free.app/api/yolo/detect', {
+            const response = await fetch('http://localhost:5000/api/yolo/detect', {
                 method: 'POST',
                 body: formData,
                 headers: { 'Accept': 'application/json' },
@@ -140,29 +141,25 @@ export const ImageForm = ({ setYoloResults }) => {
             const data = await response.json();
             const objectList = data.map(obj => obj[4]).join(', ');
             const resultText = objectList || 'No objects detected.';
-            speakObjects(resultText);
+            if (resultText === 'No objects detected.') {
+                setObjects('No objects detected.');
+                talkBack('No objects detected.');
+            } else {
+                talkBack(`Detected objects are: ${resultText}`);
+            }
             setObjects(resultText);
             setYoloResults(resultText);
         } catch (error) {
             console.error('Error detecting objects with YOLO:', error);
             setObjects('Error detecting objects.');
+            talkBack('Error detecting objects.');
         } finally {
             setIsLoading(false);
         }
     };
 
-    // Text-to-Speech function to speak detected objects
-    const speakObjects = (objects) => {
-        const synth = window.speechSynthesis;
-        const utterance = new SpeechSynthesisUtterance(objects);
-        synth.speak(utterance);
-    };
-
-
     return (
         <div className="max-w-lg mx-auto">
-            {/* <h2 className="text-2xl font-bold mb-4">Select Image</h2> */}
-
             <button
                 onClick={startVoiceRecognition}
                 className="bg-blue-500 text-white py-2 px-4 rounded-lg transition-transform duration-300 transform hover:scale-105 mb-4"
@@ -177,7 +174,7 @@ export const ImageForm = ({ setYoloResults }) => {
                 </div>
             )}
 
-            <form onSubmit={handleImageUpload} className="flex flex-col">
+            <form className="flex flex-col">
                 <input type="file" name="image" accept="image/*" className="hidden" />
             </form>
 
@@ -201,3 +198,4 @@ export const ImageForm = ({ setYoloResults }) => {
         </div>
     );
 };
+
