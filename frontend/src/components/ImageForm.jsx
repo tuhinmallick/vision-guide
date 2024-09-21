@@ -6,7 +6,7 @@ export const ImageForm = ({ setYoloResults }) => {
     const [imagePreview, setImagePreview] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [assistantResponse, setAssistantResponse] = useState(''); // Assistant's response state
-    const [useBackCamera, setUseBackCamera] = useState(true); // Control which camera to use
+    // const [useBackCamera, setUseBackCamera] = useState(true); // Control which camera to use
     const [awaitingCameraChoice, setAwaitingCameraChoice] = useState(false);
     const [awaitingQuestion, setAwaitingQuestion] = useState(false); // Waiting for user to ask questions
     const videoRef = useRef(null);
@@ -28,13 +28,13 @@ export const ImageForm = ({ setYoloResults }) => {
 
                 if (awaitingCameraChoice) {
                     if (transcript.includes('front')) {
-                        setUseBackCamera(false);
+                        // setUseBackCamera(false);
                         talkBack('Opening front camera');
-                        startCamera();
+                        startFrontCamera();
                     } else if (transcript.includes('back')) {
-                        setUseBackCamera(true);
+                        // setUseBackCamera(true);
                         talkBack('Opening back camera');
-                        startCamera();
+                        startBackCamera();
                     } else {
                         talkBack('Sorry, I didn’t get that. Please try again!');
                     }
@@ -57,6 +57,9 @@ export const ImageForm = ({ setYoloResults }) => {
                     stopCamera();
                     talkBack("Camera is turned off");
                 }
+                else if (transcript.includes('who made you')) {
+                    talkBack("I was made by team zeroes and ones");
+                }
                 //  else {
                 //     // Incorrect command
                 //     talkBack('Hmmmm, that doesn’t seem right. Try again!');
@@ -68,6 +71,7 @@ export const ImageForm = ({ setYoloResults }) => {
     const startVoiceRecognition = () => {
         recognitionRef.current.start();
         console.log('Voice recognition started');
+        talkBack('Go ahead... i am listening...');
     };
 
     // Provide voice feedback to the user
@@ -85,11 +89,29 @@ export const ImageForm = ({ setYoloResults }) => {
     };
 
     // Start the camera based on the user's choice (front/back)
-    const startCamera = () => {
+    const startFrontCamera = () => {
         setIsCameraOpen(true);
         const constraints = {
             video: {
-                facingMode: useBackCamera ? 'environment' : 'user'
+                facingMode: 'user'
+            }
+        };
+        navigator.mediaDevices.getUserMedia(constraints)
+            .then((stream) => {
+                videoRef.current.srcObject = stream;
+                videoRef.current.play();
+            })
+            .catch((error) => {
+                console.error('Error accessing the camera:', error);
+                setIsCameraOpen(false);
+            });
+    };
+
+    const startBackCamera = () => {
+        setIsCameraOpen(true);
+        const constraints = {
+            video: {
+                facingMode: 'environment'
             }
         };
         navigator.mediaDevices.getUserMedia(constraints)
@@ -152,7 +174,7 @@ export const ImageForm = ({ setYoloResults }) => {
                 talkBack('No objects detected.');
             } else {
                 talkBack(`Detected objects are: ${resultText}`);
-                talkBack('Do you have any questions about these objects?');
+                talkBack('What Question do you have about the image?');
                 setAwaitingQuestion(true); // Now we wait for the user's question
             }
             setObjects(resultText);
@@ -171,9 +193,10 @@ export const ImageForm = ({ setYoloResults }) => {
 
         setIsLoading(true); // Set loading state to true
         setAssistantResponse(''); // Clear previous response
+        talkBack("waiting for assistant response...");
 
         try {
-            const response = await fetch('https://a8b3-2400-adc5-16a-a200-fdc3-22cf-e142-b6e5.ngrok-free.app/api/chat', {
+            const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -230,11 +253,13 @@ export const ImageForm = ({ setYoloResults }) => {
                     <img src={imagePreview} alt="Preview" className="w-full max-w-lg h-auto border rounded-lg mb-4" />
                 </div>
             )}
+            {(imagePreview &&
+                <div className="mt-4">
+                    <h3 className="text-lg font-semibold">Detected Objects:</h3>
+                    <p className="text-white">{objects}</p>
+                </div>
+            )}
 
-            <div className="mt-4">
-                <h3 className="text-lg font-semibold">Detected Objects:</h3>
-                <p className="text-white">{objects}</p>
-            </div>
 
             {assistantResponse && (
                 <div className="mt-4">
