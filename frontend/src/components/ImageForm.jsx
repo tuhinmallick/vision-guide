@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import Tesseract from 'tesseract.js';
 
 export const ImageForm = ({ setYoloResults }) => {
     const [objects, setObjects] = useState('');
@@ -6,7 +7,7 @@ export const ImageForm = ({ setYoloResults }) => {
     const [imagePreview, setImagePreview] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [assistantResponse, setAssistantResponse] = useState(''); // Assistant's response state
-    const [useBackCamera, setUseBackCamera] = useState(true); // Control which camera to use
+    // const [useBackCamera, setUseBackCamera] = useState(true); // Control which camera to use
     const [awaitingCameraChoice, setAwaitingCameraChoice] = useState(false);
     const [awaitingQuestion, setAwaitingQuestion] = useState(false); // Waiting for user to ask questions
     const videoRef = useRef(null);
@@ -14,6 +15,7 @@ export const ImageForm = ({ setYoloResults }) => {
     const recognitionRef = useRef(null);
     const [conversation, setConversation] = useState([]);
     const [countdown, setCountdown] = useState(0);
+    const [detectedTexts, setDetectedTexts] = useState({});
 
     // Initialize voice recognition and TTS on component mount
     useEffect(() => {
@@ -47,7 +49,11 @@ export const ImageForm = ({ setYoloResults }) => {
                 // }
 
                 if (awaitingQuestion) {
-                    handleClick(transcript); // Send question to assistant
+                    if (transcript.includes('read the text on paper') && objects.includes('paper')) {
+                        talkBack(detectedTexts['paper'] || 'No text found on the paper.');
+                    } else {
+                        handleClick(transcript); // Send question to assistant
+                    }
                     setAwaitingQuestion(false);
                 }
 
@@ -213,6 +219,7 @@ export const ImageForm = ({ setYoloResults }) => {
             }
             setObjects(resultText);
             setYoloResults(resultText);
+            detectTextOnObjects(data, image);
             addToConversation('Assistant', `Detected objects: ${resultText}`);
         } catch (error) {
             console.error('Error detecting objects with YOLO:', error);
@@ -223,8 +230,50 @@ export const ImageForm = ({ setYoloResults }) => {
         }
     };
 
+    // Detect text on the detected objects
+    const detectTextOnObjects = (detectedObjects, image) => {
+        detectedObjects.forEach(obj => {
+            const objectName = obj[4];
+            // Assuming Tesseract should run on objects like shoes, labels, etc.
+            if (['shoes', 'label', 'paper', 'sign', 'box'].includes(objectName.toLowerCase())) {
+                extractTextFromImage(image, objectName);
+            }
+        });
+    };
+
+    // Extract text from the image using Tesseract
+    const extractTextFromImage = (image, objectName) => {
+        Tesseract.recognize(image, 'eng')
+            .then(({ data: { text } }) => {
+                console.log(`Text detected on ${objectName}: ${text}`);
+                talkBack(`Text detected on ${objectName}: ${text}`)
+                if (text.trim()) {
+                    setDetectedTexts(prev => ({
+                        ...prev,
+                        [objectName]: text
+                    }));
+                }
+            })
+            .catch((err) => {
+                console.error(`Error detecting text on ${objectName}:`, err);
+            });
+    };
+
     const handleClick = async (transcription) => {
-        const prompt = `Consider that you are a guide for a blind person and you have to answer the question based on the attached image detection results. Strictly answer the question based on the image results and the question and say nothing else. Image Results: ${objects.match(/\b[a-zA-Z]+\b/g)}\n Question: ${transcription}`;
+
+        // Append text on objects to the prompt only if available
+        let textOnObjects = '';
+        for (const object in detectedTexts) {
+            if (detectedTexts[object]) {
+                textOnObjects += ` The text on ${object} is "${detectedTexts[object].trim()}".`;
+                console.log(textOnObjects)
+            }
+        }
+
+        const prompt = `Consider that you are a guide for a blind person and you have to answer the question based on the attached image detection results. Strictly answer the question based on the image results and the question and say nothing else. Image Results: ${objects.match(/\b[a-zA-Z]+\b/g)}\n ${textOnObjects} \nQuestion: ${transcription}`;
+
+        console.log(prompt);
+
 
         setIsLoading(true); // Set loading state to true
         setAssistantResponse(''); // Clear previous response
@@ -248,6 +297,7 @@ export const ImageForm = ({ setYoloResults }) => {
 
             setAssistantResponse(generatedText);
             talkBack(generatedText); // Speak the assistant's response
+            addToConversation('Assistant', generatedText);
         } catch (error) {
             console.error('Error sending data to chat assistant:', error);
             talkBack('Failed to get a response from the assistant.');
@@ -321,7 +371,7 @@ export const ImageForm = ({ setYoloResults }) => {
             )}
 
             {/* Chat Display */}
-            <div className="mt-4 bg-gray-100 p-4 rounded-lg max-h-96 overflow-y-auto">
+            <div className="mt-4 bg-gray-200 p-4 rounded-lg max-h-96 overflow-y-auto">
                 <h3 className="text-lg font-semibold mb-2 text-gray-950">Conversation:</h3>
                 {conversation.map((entry, index) => (
                     <div key={index} className="mb-2 text-gray-700">
