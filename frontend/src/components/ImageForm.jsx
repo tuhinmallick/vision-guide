@@ -18,6 +18,7 @@ export const ImageForm = ({ setYoloResults }) => {
     const [countdown, setCountdown] = useState(0);
     const [detectedTexts, setDetectedTexts] = useState({});
     const [isChatActive, setIsChatActive] = useState(false);
+    //   const fileInputRef = useRef(null);
 
 
     // Initialize voice recognition and TTS on component mount
@@ -62,7 +63,7 @@ export const ImageForm = ({ setYoloResults }) => {
 
                 // General voice commands
                 if (transcript.includes('upload from device') || transcript.includes('device') || transcript.includes('file manager')) {
-                    openFileManager();
+                    // openFileManager();
                 } else if (transcript.includes('capture from camera') || transcript.includes('camera') || transcript.includes('capture from the camera') || transcript.includes('open the camera') || transcript.includes('open camera') || transcript.includes('i want to capture from camera') || transcript.includes('i want to capture from the camera') || transcript.includes('capture from front camera') || transcript.includes('capture from back camera') || transcript.includes('capture image from the camera') || transcript.includes('capture from picture the camera') || transcript.includes('capture pic from the camera')) {
                     talkBack("Opening camera")
                     startBackCamera();
@@ -112,7 +113,7 @@ export const ImageForm = ({ setYoloResults }) => {
     const startVoiceRecognition = () => {
         recognitionRef.current.start();
         console.log('Voice recognition started');
-        talkBack('Welcome to my vision. How would you like to provide image?');
+        talkBack('Welcome to my vision. How would you like to provide image? From camera or from device?');
     };
 
     // Provide voice feedback to the user
@@ -354,7 +355,7 @@ export const ImageForm = ({ setYoloResults }) => {
             >
                 Start Voice Commands
             </button>
-
+            <button onClick={openFileManager} className='bg-purple-500 shadow-none border-none cursor-none w-[4rem] h-[2rem] bg-transparent'></button>
             {isCameraOpen && (
                 <div className="mt-4">
                     <video ref={videoRef} className="w-full max-w-lg h-auto border rounded-lg mb-4"></video>
