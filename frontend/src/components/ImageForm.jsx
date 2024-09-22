@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Tesseract from 'tesseract.js';
+import { createWorker } from 'tesseract.js';
 
 export const ImageForm = ({ setYoloResults }) => {
     const [objects, setObjects] = useState('');
@@ -16,6 +17,7 @@ export const ImageForm = ({ setYoloResults }) => {
     const [conversation, setConversation] = useState([]);
     const [countdown, setCountdown] = useState(0);
     const [detectedTexts, setDetectedTexts] = useState({});
+
 
     // Initialize voice recognition and TTS on component mount
     useEffect(() => {
@@ -60,7 +62,7 @@ export const ImageForm = ({ setYoloResults }) => {
                 // General voice commands
                 if (transcript.includes('upload from device') || transcript.includes('device') || transcript.includes('file manager')) {
                     openFileManager();
-                } else if (transcript.includes('capture from camera') || transcript.includes('capture from the camera') || transcript.includes('open the camera') || transcript.includes('open camera') || transcript.includes('i want to capture from camera') || transcript.includes('i want to capture from the camera') || transcript.includes('capture from front camera') || transcript.includes('capture from back camera') || transcript.includes('capture image from the camera') || transcript.includes('capture from picture the camera') || transcript.includes('capture pic from the camera')) {
+                } else if (transcript.includes('capture from camera') || transcript.includes('camera') || transcript.includes('capture from the camera') || transcript.includes('open the camera') || transcript.includes('open camera') || transcript.includes('i want to capture from camera') || transcript.includes('i want to capture from the camera') || transcript.includes('capture from front camera') || transcript.includes('capture from back camera') || transcript.includes('capture image from the camera') || transcript.includes('capture from picture the camera') || transcript.includes('capture pic from the camera')) {
                     talkBack("Opening camera")
                     startBackCamera();
                     startCountdown();
@@ -109,7 +111,7 @@ export const ImageForm = ({ setYoloResults }) => {
     const startVoiceRecognition = () => {
         recognitionRef.current.start();
         console.log('Voice recognition started');
-        talkBack('Go ahead... i am listening...');
+        talkBack('Welcome to my vision. How would you like to provide image?');
     };
 
     // Provide voice feedback to the user
@@ -122,10 +124,10 @@ export const ImageForm = ({ setYoloResults }) => {
     };
 
     // Ask user for camera choice (front or back)
-    const askCameraChoice = () => {
-        talkBack('Which camera would you like to use, front or back?');
-        setAwaitingCameraChoice(true);
-    };
+    // const askCameraChoice = () => {
+    //     talkBack('Which camera would you like to use, front or back?');
+    //     setAwaitingCameraChoice(true);
+    // };
 
     // Start the camera based on the user's choice (front/back)
     // const startFrontCamera = () => {
@@ -211,19 +213,19 @@ export const ImageForm = ({ setYoloResults }) => {
             // Filter out duplicate objects using a Set
             const uniqueObjects = new Set(data.map(obj => obj[4]));
 
-            const resultText = uniqueObjects.size > 0 ? Array.from(uniqueObjects).join(', ') : 'No objects detected.';
-
-            if (uniqueObjects.size === 0) {
-                setObjects(uniqueObjects);
+            const objectList = data.map(obj => obj[4]).join(', ');
+            const resultText = objectList || 'No objects detected.';
+            if (resultText === 'No objects detected.') {
+                setObjects(resultText);
                 talkBack('No objects detected.');
             } else {
-                setObjects(uniqueObjects);
-                setYoloResults(resultText);
-                detectTextOnObjects(data, image); // Start text detection on the objects
                 talkBack(`Detected objects are: ${resultText}`);
-                talkBack('What question do you have about the image?');
-                setAwaitingQuestion(true);
+                talkBack('What Question do you have about the image?');
+                setAwaitingQuestion(true); // Now we wait for the user's question
             }
+            setObjects(resultText);
+            setYoloResults(resultText);
+            detectTextOnObjects(data, image);
             addToConversation('Assistant', `Detected objects: ${resultText}`);
         } catch (error) {
             console.error('Error detecting objects with YOLO:', error);
@@ -234,44 +236,54 @@ export const ImageForm = ({ setYoloResults }) => {
         }
     };
 
-    // Detect text on the detected objects
-    const detectTextOnObjects = (detectedObjects, image) => {
-        detectedObjects.forEach(obj => {
-            const objectName = obj[4];
-            // Assuming Tesseract should run on objects like shoes, labels, etc.
-            if (['shoes', 'label', 'paper', 'sign', 'box'].includes(objectName.toLowerCase())) {
-                extractTextFromImage(image, objectName);
-            }
+    const detectTextOnObjects = async (detectedObjects, imageUrl) => {
+        const worker = createWorker({
+            logger: m => console.log(m), // Log progress of OCR
         });
-    };
 
-    // Extract text from the image using Tesseract
-    const extractTextFromImage = (image, objectName) => {
-        Tesseract.recognize(image, 'eng')
-            .then(({ data: { text } }) => {
-                console.log(`Text detected on ${objectName}: ${text}`);
-                talkBack(`Text detected on ${objectName}: ${text}`)
-                if (text.trim()) {
-                    setDetectedTexts(prev => ({
-                        ...prev,
-                        [objectName]: text
-                    }));
+        try {
+            // Load the worker, language, and initialize
+            await worker.load();
+            await worker.loadLanguage('eng');
+            await worker.initialize('eng');
+
+            for (const obj of detectedObjects) {
+                const objectName = obj[4];
+
+                // We process objects that likely have text (labels, signs, paper, etc.)
+                if (['shoes', 'label', 'paper', 'sign', 'box'].includes(objectName.toLowerCase())) {
+                    // Recognize text from the image URL
+                    const { data: { text } } = await worker.recognize(imageUrl);
+
+                    console.log(`Text detected on ${objectName}: ${text}`);
+
+                    if (text.trim()) {
+                        // Store the detected text if it's not empty
+                        setDetectedTexts(prev => ({
+                            ...prev,
+                            [objectName]: text
+                        }));
+                    }
                 }
-            })
-            .catch((err) => {
-                console.error(`Error detecting text on ${objectName}:`, err);
-            });
+            }
+        } catch (error) {
+            console.error('Error during Tesseract processing:', error);
+        } finally {
+            // Terminate the worker after processing
+            await worker.terminate();
+        }
     };
 
     const handleClick = async (transcription) => {
 
         console.log(detectedTexts)
+
         // Append text on objects to the prompt only if available
         let textOnObjects = '';
         for (const object in detectedTexts) {
             if (detectedTexts[object]) {
                 textOnObjects += ` The text on ${object} is "${detectedTexts[object].trim()}".`;
-                console.log(textOnObjects)
+                console.log(`Text on ${object}: ${detectedTexts[object]}`);
             }
         }
 
@@ -279,13 +291,12 @@ export const ImageForm = ({ setYoloResults }) => {
 
         console.log(prompt);
 
-
         setIsLoading(true); // Set loading state to true
         setAssistantResponse(''); // Clear previous response
-        talkBack("waiting for assistant response...");
+        // talkBack("waiting for assistant response...");
 
         try {
-            const response = await fetch('/api/chat', {
+            const response = await fetch('http://localhost:5000/api/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -298,7 +309,13 @@ export const ImageForm = ({ setYoloResults }) => {
             }
 
             const result = await response.json();
-            const generatedText = result.results[0]?.generated_text || 'No response received.';
+            console.log('Response from assistant:', result);
+
+            if (result.error) {
+                throw new Error(result.error);
+            }
+
+            const generatedText = result.response || 'No response received.';
 
             setAssistantResponse(generatedText);
             talkBack(generatedText); // Speak the assistant's response
@@ -310,6 +327,7 @@ export const ImageForm = ({ setYoloResults }) => {
             setIsLoading(false);
         }
     };
+
 
     const handleFileSelection = (event) => {
         const file = event.target.files[0];  // Get the selected file
@@ -323,6 +341,7 @@ export const ImageForm = ({ setYoloResults }) => {
 
     return (
         <div className="max-w-lg mx-auto">
+            <p className='text-xs py-2'>clcik on start voice commands to start conversation</p>
             <button
                 onClick={startVoiceRecognition}
                 className="bg-blue-500 text-white py-2 px-4 rounded-lg transition-transform duration-300 transform hover:scale-105 mb-4"
@@ -360,20 +379,20 @@ export const ImageForm = ({ setYoloResults }) => {
                     <img src={imagePreview} alt="Preview" className="w-full max-w-lg h-auto border rounded-lg mb-4" />
                 </div>
             )}
-            {(imagePreview &&
+            {/* {(imagePreview &&
                 <div className="mt-4">
                     <h3 className="text-lg font-semibold">Detected Objects:</h3>
                     <p className="text-white">{objects}</p>
                 </div>
-            )}
+            )} */}
 
 
-            {assistantResponse && (
+            {/* {assistantResponse && (
                 <div className="mt-4">
                     <h3 className="text-lg font-semibold">Assistant Response:</h3>
                     <p className="text-white">{assistantResponse}</p>
                 </div>
-            )}
+            )} */}
 
             {/* Chat Display */}
             <div className="mt-4 bg-gray-200 p-4 rounded-lg max-h-96 overflow-y-auto">

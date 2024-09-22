@@ -5,6 +5,7 @@ import AudioForm from './components/AudioForm';
 import AskButton from './components/AskButton';
 import logo from './assets/logo.png';
 import ErrorBoundary from './components/ErrorBoundary';
+import TesseractExample from './components/TesseractExample';
 
 const App = () => {
   const [yoloResults, setYoloResults] = useState('');
@@ -16,6 +17,9 @@ const App = () => {
         <div className=" flex justify-center">
           <img src={logo} alt="App Logo" className="h-[7rem]" />
         </div>
+        {/* <ErrorBoundary>
+          <TesseractExample />
+        </ErrorBoundary> */}
         <ErrorBoundary>
           <ImageForm setYoloResults={setYoloResults} />
         </ErrorBoundary>
