@@ -17,6 +17,7 @@ export const ImageForm = ({ setYoloResults }) => {
     const [conversation, setConversation] = useState([]);
     const [countdown, setCountdown] = useState(0);
     const [detectedTexts, setDetectedTexts] = useState({});
+    const [isChatActive, setIsChatActive] = useState(false);
 
 
     // Initialize voice recognition and TTS on component mount
@@ -198,7 +199,7 @@ export const ImageForm = ({ setYoloResults }) => {
         formData.append('image', image, image.name || 'uploaded-image.jpg');
 
         try {
-            const response = await fetch('http://localhost:5000/api/yolo/detect', {
+            const response = await fetch('https://d33e-2400-adc5-16a-a200-94f7-4158-36e4-3068.ngrok-free.app/api/yolo/detect', {
                 method: 'POST',
                 body: formData,
                 headers: { 'Accept': 'application/json' },
@@ -275,6 +276,11 @@ export const ImageForm = ({ setYoloResults }) => {
     };
 
     const handleClick = async (transcription) => {
+        if (transcription.includes('stop chat')) {
+            talkBack("Ending the chat.");
+            setIsChatActive(false);
+            return;
+        }
 
         console.log(detectedTexts)
 
@@ -287,7 +293,7 @@ export const ImageForm = ({ setYoloResults }) => {
             }
         }
 
-        const prompt = `Consider that you are a guide for a blind person and you have to answer the question based on the attached image detection results. Strictly answer the question based on the image results and the question and say nothing else. Image Results: ${objects.match(/\b[a-zA-Z]+\b/g)}\n ${textOnObjects} \nQuestion: ${transcription}`;
+        const prompt = `Consider that you are a guide for a blind person and you have to answer the question based on the attached image detection results. Strictly answer the question based on the image results and the question and say nothing else.Also the answer should be in one or more line don't answer in one word. Image Results: ${objects.match(/\b[a-zA-Z]+\b/g)}\n ${textOnObjects} \nQuestion: ${transcription}`;
 
         console.log(prompt);
 
@@ -296,7 +302,7 @@ export const ImageForm = ({ setYoloResults }) => {
         // talkBack("waiting for assistant response...");
 
         try {
-            const response = await fetch('http://localhost:5000/api/chat', {
+            const response = await fetch('https://d33e-2400-adc5-16a-a200-94f7-4158-36e4-3068.ngrok-free.app/api/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
