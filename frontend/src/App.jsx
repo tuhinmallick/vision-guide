@@ -18,7 +18,7 @@ const App = () => {
           <img src={logo} alt="App Logo" className="h-[7rem]" />
         </div>
         {/* <ErrorBoundary>
-          <TesseractExample />
+          <TesseractExample imageUrl = {'https://tesseract.projectnaptha.com/img/eng_bw.png'} />
         </ErrorBoundary> */}
         <ErrorBoundary>
           <ImageForm setYoloResults={setYoloResults} />

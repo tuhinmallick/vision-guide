@@ -15,10 +15,10 @@ export const ImageForm = ({ setYoloResults }) => {
     const canvasRef = useRef(null);
     const recognitionRef = useRef(null);
     const [conversation, setConversation] = useState([]);
-    const [countdown, setCountdown] = useState(0);
-    const [detectedTexts, setDetectedTexts] = useState({});
-    const [isChatActive, setIsChatActive] = useState(false);
-    //   const fileInputRef = useRef(null);
+    // const [countdown, setCountdown] = useState(0);
+    const [detectedText, setDetectedText] = useState('');
+    // const [isChatActive, setIsChatActive] = useState(false);
+    //   const fileInputRef = useRef(null)
 
 
     // Initialize voice recognition and TTS on component mount
@@ -53,17 +53,16 @@ export const ImageForm = ({ setYoloResults }) => {
                 // }
 
                 if (awaitingQuestion) {
-                    if (transcript.includes('read the text on paper') && objects.includes('paper')) {
-                        talkBack(detectedTexts['paper'] || 'No text found on the paper.');
-                    } else {
-                        handleClick(transcript); // Send question to assistant
-                    }
+
+
+                    handleClick(transcript); // Send question to assistant
+
                     setAwaitingQuestion(false);
                 }
 
                 // General voice commands
                 if (transcript.includes('upload from device') || transcript.includes('device') || transcript.includes('file manager')) {
-                    // openFileManager();
+                    openFileManager();
                 } else if (transcript.includes('capture from camera') || transcript.includes('camera') || transcript.includes('capture from the camera') || transcript.includes('open the camera') || transcript.includes('open camera') || transcript.includes('i want to capture from camera') || transcript.includes('i want to capture from the camera') || transcript.includes('capture from front camera') || transcript.includes('capture from back camera') || transcript.includes('capture image from the camera') || transcript.includes('capture from picture the camera') || transcript.includes('capture pic from the camera')) {
                     talkBack("Opening camera")
                     startBackCamera();
@@ -79,6 +78,7 @@ export const ImageForm = ({ setYoloResults }) => {
                 }
                 else if (transcript.includes('who made you')) {
                     talkBack("I was made by team zeroes and ones");
+                    console.log(detectedText)
                 }
                 //  else {
                 //     // Incorrect command
@@ -123,6 +123,7 @@ export const ImageForm = ({ setYoloResults }) => {
         utterance.onend = () => recognitionRef.current.start();
         synth.speak(utterance);
         addToConversation('Assistant', message);
+
     };
 
     // Ask user for camera choice (front or back)
@@ -195,6 +196,7 @@ export const ImageForm = ({ setYoloResults }) => {
     };
 
     const handleImageUpload = async (image) => {
+
         setIsLoading(true);
         const formData = new FormData();
         formData.append('image', image, image.name || 'uploaded-image.jpg');
@@ -222,13 +224,25 @@ export const ImageForm = ({ setYoloResults }) => {
                 talkBack('No objects detected.');
             } else {
                 talkBack(`Detected objects are: ${resultText}`);
-                talkBack('What Question do you have about the image?');
+
                 setAwaitingQuestion(true); // Now we wait for the user's question
             }
             setObjects(resultText);
             setYoloResults(resultText);
-            detectTextOnObjects(data, image);
+            // detectTextOnObjects(data, image);
+            const text = await detectTextOnImage(image);
+
+            setDetectedText(text);
+
             addToConversation('Assistant', `Detected objects: ${resultText}`);
+            if (text) {
+                talkBack(`Text detected on image: ${text}`);
+            }
+
+            console.log(text)
+
+            talkBack("What question do you have about the image?");
+
         } catch (error) {
             console.error('Error detecting objects with YOLO:', error);
             setObjects('Error detecting objects.');
@@ -237,64 +251,50 @@ export const ImageForm = ({ setYoloResults }) => {
             setIsLoading(false);
         }
     };
+    const detectTextOnImage = async (imageUrl) => {
+        const worker = createWorker();
+        await worker.load();
+        await worker.loadLanguage('eng');
+        await worker.initialize('eng');
+        const { data: { text } } = await worker.recognize(imageUrl);
 
-    const detectTextOnObjects = async (detectedObjects, imageUrl) => {
-        const worker = createWorker({
-            logger: m => console.log(m), // Log progress of OCR
-        });
+        console.log("Detected text: ", detectedText)
+        console.log(text)
 
-        try {
-            // Load the worker, language, and initialize
-            await worker.load();
-            await worker.loadLanguage('eng');
-            await worker.initialize('eng');
-
-            for (const obj of detectedObjects) {
-                const objectName = obj[4];
-
-                // We process objects that likely have text (labels, signs, paper, etc.)
-                if (['shoes', 'label', 'paper', 'sign', 'box'].includes(objectName.toLowerCase())) {
-                    // Recognize text from the image URL
-                    const { data: { text } } = await worker.recognize(imageUrl);
-
-                    console.log(`Text detected on ${objectName}: ${text}`);
-
-                    if (text.trim()) {
-                        // Store the detected text if it's not empty
-                        setDetectedTexts(prev => ({
-                            ...prev,
-                            [objectName]: text
-                        }));
-                    }
-                }
-            }
-        } catch (error) {
-            console.error('Error during Tesseract processing:', error);
-        } finally {
-            // Terminate the worker after processing
-            await worker.terminate();
-        }
+        return text;
     };
 
-    const handleClick = async (transcription) => {
-        if (transcription.includes('stop chat')) {
-            talkBack("Ending the chat.");
-            setIsChatActive(false);
-            return;
+    useEffect(() => {
+        if (detectedText) {
+            console.log("Detected Text Updated:", detectedText);
         }
+    }, [detectedText]);
 
-        console.log(detectedTexts)
+
+
+    const handleClick = async (transcription) => {
+        // if (transcription.includes('stop chat')) {
+        //     talkBack("Ending the chat.");
+        //     setIsChatActive(false);
+        //     return;
+        // }
+
+        // console.log("Detected Text in handleClick:",);
 
         // Append text on objects to the prompt only if available
-        let textOnObjects = '';
-        for (const object in detectedTexts) {
-            if (detectedTexts[object]) {
-                textOnObjects += ` The text on ${object} is "${detectedTexts[object].trim()}".`;
-                console.log(`Text on ${object}: ${detectedTexts[object]}`);
-            }
-        }
+        // let textOnObjects = '';
+        // for (const object in detectedTexts) {
+        //     if (detectedTexts[object]) {
+        //         textOnObjects += ` The text on ${object} is "${detectedTexts[object].trim()}".`;
+        //         console.log(`Text on ${object}: ${detectedTexts[object]}`);
+        //     }
+        // }
 
-        const prompt = `Consider that you are a guide for a blind person and you have to answer the question based on the attached image detection results. Strictly answer the question based on the image results and the question and say nothing else.Also the answer should be in one or more line don't answer in one word. Image Results: ${objects.match(/\b[a-zA-Z]+\b/g)}\n ${textOnObjects} \nQuestion: ${transcription}`;
+        const fullImageText = detectedText || "No text detected";
+
+        console.log(fullImageText)
+
+        const prompt = `Consider that you are a guide for a blind person and you have to answer the question based on the attached image detection results. Strictly answer the question based on the image results and the question and say nothing else.Also the answer should be in one or more line don't answer in one word. Image Results: ${objects.match(/\b[a-zA-Z]+\b/g)}\n ${fullImageText} \nQuestion: ${transcription}`;
 
         console.log(prompt);
 
@@ -355,7 +355,7 @@ export const ImageForm = ({ setYoloResults }) => {
             >
                 Start Voice Commands
             </button>
-            {/* <button onClick={openFileManager} className='bg-purple-500 shadow-none border-none cursor-none w-[4rem] h-[2rem] bg-transparent'></button> */}
+            <button onClick={openFileManager} className='bg-purple-500 shadow-none border-none cursor-none w-[4rem] h-[2rem] bg-transparent'></button>
             {isCameraOpen && (
                 <div className="mt-4">
                     <video ref={videoRef} className="w-full max-w-lg h-auto border rounded-lg mb-4"></video>
