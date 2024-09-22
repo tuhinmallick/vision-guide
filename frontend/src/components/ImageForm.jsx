@@ -326,7 +326,7 @@ export const ImageForm = ({ setYoloResults }) => {
 
             setAssistantResponse(generatedText);
             talkBack(generatedText); // Speak the assistant's response
-            addToConversation('Assistant', generatedText);
+            // addToConversation('Assistant', generatedText);
         } catch (error) {
             console.error('Error sending data to chat assistant:', error);
             talkBack('Failed to get a response from the assistant.');
