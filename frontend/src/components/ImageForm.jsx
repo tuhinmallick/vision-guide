@@ -207,19 +207,23 @@ export const ImageForm = ({ setYoloResults }) => {
             }
 
             const data = await response.json();
-            const objectList = data.map(obj => obj[4]).join(', ');
-            const resultText = objectList || 'No objects detected.';
-            if (resultText === 'No objects detected.') {
-                setObjects(resultText);
+
+            // Filter out duplicate objects using a Set
+            const uniqueObjects = new Set(data.map(obj => obj[4]));
+
+            const resultText = uniqueObjects.size > 0 ? Array.from(uniqueObjects).join(', ') : 'No objects detected.';
+
+            if (uniqueObjects.size === 0) {
+                setObjects(uniqueObjects);
                 talkBack('No objects detected.');
             } else {
+                setObjects(uniqueObjects);
+                setYoloResults(resultText);
+                detectTextOnObjects(data, image); // Start text detection on the objects
                 talkBack(`Detected objects are: ${resultText}`);
-                talkBack('What Question do you have about the image?');
-                setAwaitingQuestion(true); // Now we wait for the user's question
+                talkBack('What question do you have about the image?');
+                setAwaitingQuestion(true);
             }
-            setObjects(resultText);
-            setYoloResults(resultText);
-            detectTextOnObjects(data, image);
             addToConversation('Assistant', `Detected objects: ${resultText}`);
         } catch (error) {
             console.error('Error detecting objects with YOLO:', error);
@@ -261,6 +265,7 @@ export const ImageForm = ({ setYoloResults }) => {
 
     const handleClick = async (transcription) => {
 
+        console.log(detectedTexts)
         // Append text on objects to the prompt only if available
         let textOnObjects = '';
         for (const object in detectedTexts) {
