@@ -355,7 +355,7 @@ export const ImageForm = ({ setYoloResults }) => {
             >
                 Start Voice Commands
             </button>
-            <button onClick={openFileManager} className='bg-purple-500 shadow-none border-none cursor-none w-[4rem] h-[2rem] bg-transparent'></button>
+            {/* <button onClick={openFileManager} className='bg-purple-500 shadow-none border-none cursor-none w-[4rem] h-[2rem] bg-transparent'></button> */}
             {isCameraOpen && (
                 <div className="mt-4">
                     <video ref={videoRef} className="w-full max-w-lg h-auto border rounded-lg mb-4"></video>
