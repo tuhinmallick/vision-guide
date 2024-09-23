@@ -6,6 +6,7 @@ import AskButton from './components/AskButton';
 import logo from './assets/logo.png';
 import ErrorBoundary from './components/ErrorBoundary';
 import TesseractExample from './components/TesseractExample';
+import OCRUploader from './components/TestTextDetection';
 
 const App = () => {
   const [yoloResults, setYoloResults] = useState('');
@@ -19,6 +20,9 @@ const App = () => {
         </div>
         {/* <ErrorBoundary>
           <TesseractExample imageUrl = {'https://tesseract.projectnaptha.com/img/eng_bw.png'} />
+        </ErrorBoundary> */}
+        {/* <ErrorBoundary>
+          <OCRUploader />
         </ErrorBoundary> */}
         <ErrorBoundary>
           <ImageForm setYoloResults={setYoloResults} />

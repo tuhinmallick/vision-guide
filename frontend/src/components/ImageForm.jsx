@@ -233,7 +233,7 @@ export const ImageForm = ({ setYoloResults }) => {
         formData.append('image', image, image.name || 'uploaded-image.jpg');
 
         try {
-            const response = await fetch('https://cb9a-2400-adc5-16a-a200-16d-8785-a547-3534.ngrok-free.app/api/yolo/detect', {
+            const response = await fetch(' https://dab2-182-181-2-40.ngrok-free.app/api/yolo/detect', {
                 method: 'POST',
                 body: formData,
                 headers: { 'Accept': 'application/json' },
@@ -265,8 +265,9 @@ export const ImageForm = ({ setYoloResults }) => {
 
             setDetectedText(text);
 
-            addToConversation('Assistant', `Detected objects: ${resultText}`);
-            if (text) {
+            // addToConversation('Assistant', `Detected objects: ${resultText}`);
+            text.toString();
+            if (text.length > 0) {
                 talkBack(`Text detected on image: ${text}`);
             }
 
@@ -282,18 +283,55 @@ export const ImageForm = ({ setYoloResults }) => {
             setIsLoading(false);
         }
     };
-    const detectTextOnImage = async (imageUrl) => {
-        const worker = createWorker();
-        await worker.load();
-        await worker.loadLanguage('eng');
-        await worker.initialize('eng');
-        const { data: { text } } = await worker.recognize(imageUrl);
 
-        console.log("Detected text: ", detectedText)
-        console.log(text)
+    const detectTextOnImage = async (imageFile) => {
+        if (!imageFile) {
+            alert("Please select a file first.");
+            return;
+        }
 
-        return text;
+        const formData = new FormData();
+        formData.append('image', imageFile);
+
+        try {
+            const response = await fetch('https://d72a-182-181-2-40.ngrok-free.app/ocr', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Error: ${response.status} - ${errorText}`);
+            }
+
+            const data = await response.json();
+
+            // Extract only the detected text
+            const extractedText = data.detected_text.map(item => item.text);
+
+            // Set the extracted text to the state or wherever you want to use it
+            setDetectedText(extractedText);
+            console.log(extractedText);
+            return extractedText;
+        } catch (error) {
+            console.error("Error uploading the image", error);
+            // alert("Failed to upload the image. Check the console for more details.");
+        }
     };
+
+
+    // const detectTextOnImage = async (imageUrl) => {
+    //     const worker = createWorker();
+    //     await worker.load();
+    //     await worker.loadLanguage('eng');
+    //     await worker.initialize('eng');
+    //     const { data: { text } } = await worker.recognize(imageUrl);
+
+    //     console.log("Detected text: ", detectedText)
+    //     console.log(text)
+
+    //     return text;
+    // };
 
     useEffect(() => {
         if (detectedText) {
@@ -321,6 +359,8 @@ export const ImageForm = ({ setYoloResults }) => {
         //     }
         // }
 
+        console.log("Text......", detectedText)
+
         const fullImageText = detectedText || "No text detected";
 
         console.log(fullImageText)
@@ -334,7 +374,7 @@ export const ImageForm = ({ setYoloResults }) => {
         // talkBack("waiting for assistant response...");
 
         try {
-            const response = await fetch('https://cb9a-2400-adc5-16a-a200-16d-8785-a547-3534.ngrok-free.app/api/chat', {
+            const response = await fetch('https://dab2-182-181-2-40.ngrok-free.app/api/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
