@@ -173,9 +173,14 @@ export const ImageForm = ({ setYoloResults }) => {
     };
 
     const handleOpenCameraClick = () => {
-        startBackCamera();
-        captureImage();
-        startCountdown();
+
+        if (!isCameraOpen) {
+            startBackCamera();
+            captureImage();
+            startCountdown();
+        } else {
+            stopCamera();
+        }
     }
 
     // Automatically open file manager
@@ -228,7 +233,7 @@ export const ImageForm = ({ setYoloResults }) => {
         formData.append('image', image, image.name || 'uploaded-image.jpg');
 
         try {
-            const response = await fetch('http://localhost:5000/api/yolo/detect', {
+            const response = await fetch('https://cb9a-2400-adc5-16a-a200-16d-8785-a547-3534.ngrok-free.app/api/yolo/detect', {
                 method: 'POST',
                 body: formData,
                 headers: { 'Accept': 'application/json' },
@@ -329,7 +334,7 @@ export const ImageForm = ({ setYoloResults }) => {
         // talkBack("waiting for assistant response...");
 
         try {
-            const response = await fetch('http://localhost:5000/api/chat', {
+            const response = await fetch('https://cb9a-2400-adc5-16a-a200-16d-8785-a547-3534.ngrok-free.app/api/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
