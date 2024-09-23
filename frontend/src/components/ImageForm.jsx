@@ -273,7 +273,10 @@ export const ImageForm = ({ setYoloResults }) => {
 
             console.log(text)
 
+
             talkBack("What question do you have about the image?");
+
+
 
         } catch (error) {
             console.error('Error detecting objects with YOLO:', error);
