@@ -15,7 +15,7 @@ export const ImageForm = ({ setYoloResults }) => {
     const canvasRef = useRef(null);
     const recognitionRef = useRef(null);
     const [conversation, setConversation] = useState([]);
-    // const [countdown, setCountdown] = useState(0);
+    const [countdown, setCountdown] = useState(0);
     const [detectedText, setDetectedText] = useState('');
     // const [isChatActive, setIsChatActive] = useState(false);
     //   const fileInputRef = useRef(null)
@@ -64,10 +64,9 @@ export const ImageForm = ({ setYoloResults }) => {
                 if (transcript.includes('upload from device') || transcript.includes('device') || transcript.includes('file manager')) {
                     openFileManager();
                 } else if (transcript.includes('capture from camera') || transcript.includes('camera') || transcript.includes('capture from the camera') || transcript.includes('open the camera') || transcript.includes('open camera') || transcript.includes('i want to capture from camera') || transcript.includes('i want to capture from the camera') || transcript.includes('capture from front camera') || transcript.includes('capture from back camera') || transcript.includes('capture image from the camera') || transcript.includes('capture from picture the camera') || transcript.includes('capture pic from the camera')) {
-                    talkBack("Opening camera")
-                    startBackCamera();
-                    startCountdown();
-                    captureImage();
+                    // talkBack("Opening camera")
+                    handleOpenCameraClick()
+
                 }
                 //  else if (transcript.includes('capture image') || transcript.includes('take image') || transcript.includes('capture pic') || transcript.includes('capture picture') || transcript.includes('take picture') || transcript.includes('capture the pic') || transcript.includes('capture the picture') || transcript.includes('capture') || transcript.includes('capture the image') || transcript.includes('take the image') || transcript.includes('take the pic') || transcript.includes('take the picture')) {
                 //     captureImage();
@@ -152,6 +151,9 @@ export const ImageForm = ({ setYoloResults }) => {
     // };
 
     const startBackCamera = () => {
+
+        talkBack('Opening camera')
+
         setIsCameraOpen(true);
         const constraints = {
             video: {
@@ -167,7 +169,14 @@ export const ImageForm = ({ setYoloResults }) => {
                 console.error('Error accessing the camera:', error);
                 setIsCameraOpen(false);
             });
+
     };
+
+    const handleOpenCameraClick = () => {
+        startBackCamera();
+        captureImage();
+        startCountdown();
+    }
 
     // Automatically open file manager
     const openFileManager = () => {
@@ -177,16 +186,33 @@ export const ImageForm = ({ setYoloResults }) => {
 
     // Capture image and submit for detection
     const captureImage = () => {
+        if (!canvasRef.current) {
+            console.error('Canvas element is not available.');
+            return;
+        }
+
         const context = canvasRef.current.getContext('2d');
+        if (!context) {
+            console.error('Failed to get canvas context.');
+            return;
+        }
+
         context.drawImage(videoRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height);
+
         canvasRef.current.toBlob((blob) => {
-            const imageUrl = URL.createObjectURL(blob);
-            setImagePreview(imageUrl);
-            talkBack('Image captured. Processing for detection.');
-            handleImageUpload(blob);
+            if (blob) {
+                const imageUrl = URL.createObjectURL(blob);
+                setImagePreview(imageUrl);
+                talkBack('Image captured. Processing for detection.');
+                handleImageUpload(blob);
+            } else {
+                console.error('Failed to create image blob.');
+            }
         }, 'image/jpeg');
+
         stopCamera();
     };
+
 
     const stopCamera = () => {
         const stream = videoRef.current.srcObject;
@@ -202,7 +228,7 @@ export const ImageForm = ({ setYoloResults }) => {
         formData.append('image', image, image.name || 'uploaded-image.jpg');
 
         try {
-            const response = await fetch('https://d33e-2400-adc5-16a-a200-94f7-4158-36e4-3068.ngrok-free.app/api/yolo/detect', {
+            const response = await fetch('http://localhost:5000/api/yolo/detect', {
                 method: 'POST',
                 body: formData,
                 headers: { 'Accept': 'application/json' },
@@ -303,7 +329,7 @@ export const ImageForm = ({ setYoloResults }) => {
         // talkBack("waiting for assistant response...");
 
         try {
-            const response = await fetch('https://d33e-2400-adc5-16a-a200-94f7-4158-36e4-3068.ngrok-free.app/api/chat', {
+            const response = await fetch('http://localhost:5000/api/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -355,7 +381,10 @@ export const ImageForm = ({ setYoloResults }) => {
             >
                 Start Voice Commands
             </button>
-            <button onClick={openFileManager} className='bg-purple-500 shadow-none border-none cursor-none w-[4rem] h-[2rem] bg-transparent'></button>
+            <div className=''>
+                <button onClick={openFileManager} className='bg-blue-500 text-white py-2 px-4 rounded-lg transition-transform duration-300 transform hover:scale-105 mb-4'>Upload from device</button>
+                <button onClick={handleOpenCameraClick} className='bg-blue-500 ml-2 text-white py-2 px-4 rounded-lg transition-transform duration-300 transform hover:scale-105 mb-4'>{isCameraOpen ? 'Close Camera' : 'Open Camera'}</button>
+            </div>
             {isCameraOpen && (
                 <div className="mt-4">
                     <video ref={videoRef} className="w-full max-w-lg h-auto border rounded-lg mb-4"></video>
